@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ことばさがし</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF6FF; --card:#FFFFFF; --ink:#1F3A5F; --blue:#3A8DDE; --blue-d:#2E74B8;
+  --coral:#FF8A5C; --coral-d:#F0703F; --mint:#34C48E; --sun:#FFC53D; --gray:#9DB2C7;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','BIZ UDPGothic','Yu Gothic',sans-serif;
+  color:var(--ink); font-weight:700;
+  min-height:100vh; display:flex; justify-content:center;
+}
+.app{width:100%; max-width:480px; padding:12px 12px 30px;}
+.top{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; gap:8px;}
+h1{font-size:18px; font-weight:900; margin:0; flex:1; text-align:center;}
+.stars{background:var(--card); border-radius:999px; padding:6px 12px; font-size:16px;
+  box-shadow:0 2px 0 rgba(31,58,95,.12); white-space:nowrap; cursor:pointer;}
+.stars b{color:var(--coral-d); font-size:18px;}
+.stars .hint{font-size:10px; color:var(--gray); margin-left:3px;}
+.levels{display:flex; gap:6px; margin-bottom:8px;}
+.lv{flex:1; border:none; border-radius:14px; padding:8px 2px; font-family:inherit; font-weight:900;
+  font-size:13px; line-height:1.3; background:#fff; color:var(--gray); cursor:pointer;
+  box-shadow:0 3px 0 rgba(31,58,95,.10);}
+.lv small{display:block; font-size:10px; font-weight:700;}
+.lv.on{background:var(--sun); color:#7A5200; box-shadow:0 3px 0 #D9A324;}
+.progressrow{display:flex; align-items:center; gap:8px; background:#fff; border-radius:14px;
+  padding:7px 12px; margin-bottom:8px; box-shadow:0 2px 0 rgba(31,58,95,.10);}
+.pcount{font-size:13px; font-weight:900; white-space:nowrap; color:var(--blue-d);}
+.miss{font-size:13px; font-weight:900; color:var(--coral-d); white-space:nowrap; min-width:72px; text-align:right;}
+.dots{display:flex; gap:5px; flex:1; justify-content:center;}
+.dot{width:18px; height:18px; border-radius:50%; background:#E3EDF7; border:2px solid #C4D3E3;
+  display:flex; align-items:center; justify-content:center; font-size:10px; transition:transform .2s;}
+.dot.now{border-color:var(--sun); background:#FFF3D6;}
+.dot.got3{background:var(--sun); border-color:#D9A324; transform:scale(1.12);}
+.dot.got2{background:var(--mint); border-color:#26996E; transform:scale(1.12);}
+.dot.got1{background:var(--gray); border-color:#7A91A8; transform:scale(1.12);}
+/* ---------- word grid ---------- */
+.grid-wrap{background:var(--card); border-radius:24px; padding:12px; box-shadow:0 4px 0 rgba(31,58,95,.10);
+  touch-action:none; user-select:none;}
+.word-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:4px;}
+.wc{aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+  font-size:21px; font-weight:900; border-radius:10px; background:#F4F9FF; color:var(--ink);
+  cursor:pointer; transition:background .08s, color .08s;}
+.wc.selecting{background:var(--blue); color:#fff;}
+.wc.f0{background:#FF8A5C; color:#fff;}
+.wc.f1{background:#3A8DDE; color:#fff;}
+.wc.f2{background:#34C48E; color:#fff;}
+.wc.f3{background:#9B7BE8; color:#fff;}
+.wc.f4{background:#E8A912; color:#fff;}
+@keyframes wrongflash{0%,100%{background:#F4F9FF;} 50%{background:#FFD0D0;}}
+.wc.wrong{animation:wrongflash .4s ease;}
+/* ---------- word list ---------- */
+.wordlist{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; justify-content:center;}
+.wtag{font-size:15px; font-weight:900; border-radius:99px; padding:5px 14px;
+  background:#fff; color:var(--ink); box-shadow:0 2px 0 rgba(31,58,95,.12);}
+.wtag.found{text-decoration:line-through; color:#fff; box-shadow:none;}
+/* ---------- actions ---------- */
+.actions{display:flex; gap:8px; margin-top:12px;}
+.act{flex:1; border:none; border-radius:16px; padding:12px; font-family:inherit; font-size:16px; font-weight:900;
+  cursor:pointer; box-shadow:0 3px 0 rgba(31,58,95,.15); background:#fff; color:var(--blue-d);}
+.act.primary{background:var(--sun); color:#7A5200; box-shadow:0 3px 0 #D9A324;}
+.act.icon{flex:0 0 64px; font-size:20px;}
+.act.icon.on{background:var(--blue); color:#fff; box-shadow:0 3px 0 var(--blue-d);}
+.spacer{flex:1;}
+.msg{text-align:center; min-height:40px; font-size:16px; font-weight:900; margin-top:8px; line-height:1.4;}
+.msg.good{color:var(--mint);} .msg.oops{color:var(--coral-d);} .msg.think{color:var(--blue-d);}
+/* ---------- reward / zukan / unlock ---------- */
+.reward{position:fixed; inset:0; background:rgba(31,58,95,.45); display:none; align-items:center; justify-content:center; z-index:60; padding:20px;}
+.rewardcard{background:#fff; border-radius:28px; padding:28px 24px; text-align:center; max-width:340px; width:100%;
+  box-shadow:0 8px 0 rgba(31,58,95,.25); animation:popin .35s;}
+@keyframes popin{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+.rewardcard .big{font-size:64px; line-height:1;}
+.rewardcard h2{font-size:24px; font-weight:900; margin:10px 0 4px;}
+.rewardcard .rstars{font-size:26px; font-weight:900; color:var(--coral-d); margin:8px 0 2px;}
+.rewardcard .rtotal{font-size:14px; color:var(--gray); margin-bottom:16px;}
+.rewardcard .rmsg{font-size:16px; margin-bottom:18px;}
+.rewardcard button{width:100%; border:none; border-radius:18px; padding:15px; font-family:inherit;
+  font-size:18px; font-weight:900; background:var(--sun); color:#7A5200; box-shadow:0 4px 0 #D9A324; cursor:pointer;}
+.zukan{position:fixed; inset:0; background:rgba(31,58,95,.45); display:none; align-items:flex-end; justify-content:center; z-index:62;}
+.zukancard{background:#fff; border-radius:28px 28px 0 0; padding:20px 18px 26px; width:100%; max-width:480px; max-height:82vh; overflow:auto;}
+.zukancard h2{font-size:20px; font-weight:900; margin:0 0 4px; text-align:center;}
+.znext{text-align:center; font-size:13px; font-weight:900; color:var(--blue-d); margin-bottom:6px;}
+.zbar{height:12px; background:#E3EDF7; border-radius:99px; overflow:hidden; margin:0 10px 14px;}
+.zbar>div{height:100%; background:linear-gradient(90deg,var(--sun),var(--coral)); border-radius:99px; transition:width .4s;}
+.zgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+.badge{background:#F4F9FF; border-radius:18px; padding:12px 6px; text-align:center;}
+.badge .be{font-size:34px; line-height:1.1;}
+.badge .bn{font-size:12px; font-weight:900; margin-top:4px;}
+.badge .bt{font-size:11px; color:var(--gray);}
+.badge.locked .be{filter:grayscale(1); opacity:.45;}
+.badge.locked .bn{color:var(--gray);}
+.zclose{width:100%; margin-top:14px; border:none; border-radius:16px; padding:13px; font-family:inherit;
+  font-size:16px; font-weight:900; background:var(--blue); color:#fff; box-shadow:0 3px 0 var(--blue-d); cursor:pointer;}
+.unlock{position:fixed; inset:0; background:rgba(31,58,95,.45); display:none; align-items:center; justify-content:center; z-index:65; padding:20px;}
+.unlockcard{background:#fff; border-radius:28px; padding:26px 22px; text-align:center; max-width:320px; width:100%;
+  box-shadow:0 8px 0 rgba(31,58,95,.25); animation:popin .35s;}
+.unlockcard .ue{font-size:70px; line-height:1;}
+.unlockcard h3{font-size:20px; font-weight:900; margin:8px 0 2px; color:var(--coral-d);}
+.unlockcard .un{font-size:22px; font-weight:900; margin-bottom:16px;}
+.unlockcard button{width:100%; border:none; border-radius:16px; padding:13px; font-family:inherit;
+  font-size:17px; font-weight:900; background:var(--sun); color:#7A5200; box-shadow:0 3px 0 #D9A324; cursor:pointer;}
+.confetti{position:fixed; top:-12px; width:10px; height:14px; border-radius:3px; pointer-events:none; z-index:70;
+  animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
+@media (prefers-reduced-motion:reduce){.rewardcard,.unlockcard{animation:none;} .confetti{display:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a href="index.html" style="text-decoration:none;font-size:20px;background:#fff;border-radius:12px;padding:6px 10px;box-shadow:0 2px 0 rgba(31,58,95,.12);" title="もくじへ">🏠</a>
+    <h1>🔍 ことばさがし</h1>
+    <div class="stars" id="starsPill">⭐<b id="stars">0</b><span class="hint">📖</span></div>
+  </div>
+
+  <div class="levels">
+    <button class="lv on" data-lv="1">レベル1<small>どうぶつ</small></button>
+    <button class="lv" data-lv="2">レベル2<small>しぜん</small></button>
+    <button class="lv" data-lv="3">レベル3<small>がっこう</small></button>
+  </div>
+
+  <div class="progressrow">
+    <div class="pcount" id="pcount">パズル 1/5</div>
+    <div class="dots" id="dots"></div>
+    <div class="miss" id="missCount"></div>
+  </div>
+
+  <div class="grid-wrap">
+    <div class="word-grid" id="wordGrid"></div>
+  </div>
+
+  <div class="wordlist" id="wordList"></div>
+  <div class="msg think" id="msg">ことばを さがして ドラッグしてね!</div>
+
+  <div class="actions">
+    <button class="act icon" id="soundBtn" title="おと">🔊</button>
+    <div class="spacer"></div>
+    <button class="act primary" id="nextBtn" style="display:none">つぎの パズル ➡</button>
+  </div>
+</div>
+
+<div class="reward" id="reward" style="display:none">
+  <div class="rewardcard">
+    <div class="big" id="rEmoji">🏆</div>
+    <h2 id="rTitle">クリア!</h2>
+    <div class="rstars" id="rStars"></div>
+    <div class="rtotal" id="rTotal"></div>
+    <div class="rmsg" id="rMsg"></div>
+    <button id="againBtn">もういちど あそぶ ▶</button>
+  </div>
+</div>
+
+<div class="zukan" id="zukan" style="display:none">
+  <div class="zukancard">
+    <h2>🏅 バッジずかん</h2>
+    <div class="znext" id="znext"></div>
+    <div class="zbar"><div id="zbarFill" style="width:0%"></div></div>
+    <div class="zgrid" id="zgrid"></div>
+    <button class="zclose" id="zClose">とじる</button>
+  </div>
+</div>
+
+<div class="unlock" id="unlock" style="display:none">
+  <div class="unlockcard">
+    <div class="ue" id="uEmoji">🏅</div>
+    <h3>バッジ ゲット!</h3>
+    <div class="un" id="uName"></div>
+    <button id="uClose">やったー!</button>
+  </div>
+</div>
+
+<script>
+(() => {
+const PUZZLES=5, ROWS=6, COLS=6;
+const $=id=>document.getElementById(id);
+const FOUND_COLORS=['#FF8A5C','#3A8DDE','#34C48E','#9B7BE8','#E8A912'];
+
+/* ---------- word sets ---------- */
+const WORD_SETS={
+  1:['いぬ','ねこ','うし','さる','くま','うさぎ','ぞう','とら','へび','きつね','うま','ひつじ'],
+  2:['はる','なつ','あき','ふゆ','はな','そら','うみ','やま','かわ','もり','あめ','くも'],
+  3:['えんぴつ','けしごむ','じょうぎ','ふでばこ','こくばん','せんせい','ともだち','きょうしつ','らんどせる','たいいくかん'],
+};
+
+/* ---------- sound ---------- */
+let actx=null, muted=false;
+function audio(){
+  if(muted)return null;
+  if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}
+  if(actx.state==='suspended')actx.resume();
+  return actx;
+}
+function tone(freq,t0,len,type='sine',vol=0.18){
+  const ac=audio();if(!ac)return;
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.type=type;o.frequency.value=freq;
+  const s=ac.currentTime+t0;
+  g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(vol,s+0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001,s+len);
+  o.connect(g);g.connect(ac.destination);o.start(s);o.stop(s+len+0.05);
+}
+const sRight  =()=>{tone(784,0,.15,'sine',.25);tone(1175,.14,.35,'sine',.25);};
+const sOops   =()=>{tone(330,0,.18,'sine',.13);};
+const sFanfare=()=>{[523,659,784,1047].forEach((f,i)=>tone(f,i*.14,.32,'sine',.22));tone(1319,.6,.5,'sine',.22);};
+const sFound  =()=>{tone(880,0,.12,'sine',.2);tone(1320,.1,.2,'sine',.18);};
+
+/* ---------- helpers ---------- */
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+const KANA='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん';
+
+/* ---------- grid generation ---------- */
+let grid=[], placed=[];
+
+function buildGrid(words){
+  grid=Array.from({length:ROWS},()=>Array(COLS).fill(null));
+  placed=[];
+  const target=shuffle(words).slice(0,5);
+  for(const word of target) tryPlace(word);
+  for(let r=0;r<ROWS;r++)
+    for(let c=0;c<COLS;c++)
+      if(!grid[r][c])grid[r][c]=KANA[Math.floor(Math.random()*KANA.length)];
+  return grid;
+}
+
+function tryPlace(word){
+  const dirs=shuffle(['h','v']);
+  for(const dir of dirs){
+    const maxR=dir==='h'?ROWS-1:ROWS-word.length;
+    const maxC=dir==='h'?COLS-word.length:COLS-1;
+    if(maxR<0||maxC<0)continue;
+    const positions=[];
+    for(let r=0;r<=maxR;r++)for(let c=0;c<=maxC;c++)positions.push([r,c]);
+    for(const [r,c] of shuffle(positions)){
+      let ok=true;
+      for(let i=0;i<word.length;i++){
+        const gr=dir==='h'?r:r+i, gc=dir==='h'?c+i:c;
+        if(grid[gr][gc]!==null&&grid[gr][gc]!==word[i]){ok=false;break;}
+      }
+      if(ok){
+        for(let i=0;i<word.length;i++){
+          const gr=dir==='h'?r:r+i, gc=dir==='h'?c+i:c;
+          grid[gr][gc]=word[i];
+        }
+        const r2=dir==='h'?r:r+word.length-1;
+        const c2=dir==='h'?c+word.length-1:c;
+        placed.push({word,r1:r,c1:c,r2,c2,dir,colorIdx:placed.length,found:false});
+        return;
+      }
+    }
+  }
+}
+
+/* ---------- state ---------- */
+let level=1, pNum=0, sessionStars=0;
+let misses=0, dragStart=null, dragEnd=null;
+let stars=0;
+
+/* ---------- badges ---------- */
+const BADGES=[
+  {n:10, e:'🔍',name:'たんていの たまご'},
+  {n:25, e:'📚',name:'ことば キッズ'},
+  {n:50, e:'🥉',name:'どうメダル'},
+  {n:80, e:'🥈',name:'ぎんメダル'},
+  {n:120,e:'🥇',name:'きんメダル'},
+  {n:180,e:'💎',name:'ダイヤの じしょ'},
+  {n:250,e:'🦉',name:'ことばの ふくろう'},
+  {n:350,e:'✍️',name:'さっか きゅう'},
+  {n:450,e:'📖',name:'じしょ マスター'},
+  {n:600,e:'🏆',name:'ことば マスター'},
+];
+const unlockedCount=s=>BADGES.filter(b=>s>=b.n).length;
+async function saveStars(){try{if(window.storage)await window.storage.set('kotoba-stars',String(stars));}catch(e){}}
+async function loadStars(){
+  try{if(window.storage){const r=await window.storage.get('kotoba-stars');if(r&&r.value)stars=parseInt(r.value)||0;}}catch(e){}
+  $('stars').textContent=stars;
+}
+function renderZukan(){
+  const g=$('zgrid');g.replaceChildren();
+  BADGES.forEach(b=>{
+    const got=stars>=b.n,d=document.createElement('div');
+    d.className='badge'+(got?'':' locked');
+    d.innerHTML=`<div class="be">${got?b.e:'❔'}</div><div class="bn">${got?b.name:'? ? ?'}</div><div class="bt">⭐${b.n}</div>`;
+    g.appendChild(d);
+  });
+  const next=BADGES.find(b=>stars<b.n);
+  if(next){
+    const prev=[...BADGES].reverse().find(b=>stars>=b.n);
+    const base=prev?prev.n:0;
+    $('znext').textContent=`つぎのバッジまで あと⭐${next.n-stars}こ!`;
+    $('zbarFill').style.width=Math.min(100,(stars-base)/(next.n-base)*100)+'%';
+  }else{$('znext').textContent='ぜんぶ あつめた!🎉';$('zbarFill').style.width='100%';}
+}
+function showUnlock(b){$('uEmoji').textContent=b.e;$('uName').textContent=b.name;$('unlock').style.display='flex';sFanfare();confetti(40);}
+function gainStars(gain){
+  const before=unlockedCount(stars);
+  stars+=gain;sessionStars+=gain;$('stars').textContent=stars;saveStars();
+  if(unlockedCount(stars)>before){const b=BADGES[unlockedCount(stars)-1];setTimeout(()=>showUnlock(b),900);}
+}
+
+/* ---------- session ---------- */
+function buildDots(){
+  const box=$('dots');box.replaceChildren();
+  for(let i=0;i<PUZZLES;i++){const d=document.createElement('div');d.className='dot';box.appendChild(d);}
+}
+function startSession(){pNum=0;sessionStars=0;buildDots();$('reward').style.display='none';nextPuzzle();}
+function nextPuzzle(){
+  pNum++;
+  $('pcount').textContent=`パズル ${pNum}/${PUZZLES}`;
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('now',i===pNum-1));
+  showPuzzle();
+}
+function markDot(gain){
+  const d=document.querySelectorAll('.dot')[pNum-1];if(!d)return;
+  d.classList.remove('now');
+  d.classList.add(gain>=3?'got3':gain>=2?'got2':'got1');
+  d.textContent='⭐';
+}
+function showReward(){
+  const max=PUZZLES*3;
+  let emoji,title,msg;
+  if(sessionStars>=max*0.9){emoji='🏆';title='パーフェクト!';msg='ぜんぶの ことばを みつけた! さすが!';}
+  else if(sessionStars>=max*0.6){emoji='🌟';title='すごい!クリア!';msg='ことばさがし、うまいね!';}
+  else{emoji='💪';title='がんばった!';msg='なんどもやると もっと はやく みつかるよ!';}
+  $('rEmoji').textContent=emoji;$('rTitle').textContent=title;
+  $('rStars').textContent=`⭐×${sessionStars} ゲット!`;$('rTotal').textContent=`ぜんぶで ⭐${stars}こ`;
+  $('rMsg').textContent=msg;$('reward').style.display='flex';sFanfare();confetti(60);
+}
+
+/* ---------- render puzzle ---------- */
+function showPuzzle(){
+  misses=0;updateMiss();
+  const words=WORD_SETS[level];
+  buildGrid(words);
+  renderGridCells();
+  renderWordList();
+  $('msg').textContent='ことばを さがして ドラッグしてね!';
+  $('msg').className='msg think';
+  $('nextBtn').style.display='none';
+}
+
+function renderGridCells(){
+  const gEl=$('wordGrid');gEl.replaceChildren();
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const cell=document.createElement('div');
+      cell.className='wc';
+      cell.textContent=grid[r][c];
+      cell.dataset.r=r;cell.dataset.c=c;
+      gEl.appendChild(cell);
+    }
+  }
+}
+
+function renderWordList(){
+  const el=$('wordList');el.replaceChildren();
+  placed.forEach((p,i)=>{
+    const tag=document.createElement('div');
+    tag.className='wtag'+(p.found?' found':'');
+    tag.id='wtag'+i;
+    if(p.found)tag.style.background=FOUND_COLORS[p.colorIdx%FOUND_COLORS.length];
+    tag.textContent=p.word;
+    el.appendChild(tag);
+  });
+}
+
+function updateMiss(){$('missCount').textContent=misses>0?`まちがい: ${misses}かい`:'';}
+
+/* ---------- pointer selection ---------- */
+function cellFromEvent(e){
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  if(!el||!el.classList.contains('wc'))return null;
+  return{r:+el.dataset.r,c:+el.dataset.c};
+}
+
+function cellsInRange(s,e){
+  if(!s||!e)return[];
+  if(s.r===e.r){
+    const minC=Math.min(s.c,e.c),maxC=Math.max(s.c,e.c);
+    return Array.from({length:maxC-minC+1},(_,i)=>({r:s.r,c:minC+i}));
+  }
+  if(s.c===e.c){
+    const minR=Math.min(s.r,e.r),maxR=Math.max(s.r,e.r);
+    return Array.from({length:maxR-minR+1},(_,i)=>({r:minR+i,c:s.c}));
+  }
+  return[];
+}
+
+function updateSelecting(){
+  document.querySelectorAll('.wc.selecting').forEach(el=>el.classList.remove('selecting'));
+  if(!dragStart||!dragEnd)return;
+  const cells=cellsInRange(dragStart,dragEnd);
+  cells.forEach(({r,c})=>{
+    const el=document.querySelector(`.wc[data-r="${r}"][data-c="${c}"]`);
+    if(el&&!el.classList.contains('f0')&&!el.classList.contains('f1')&&!el.classList.contains('f2')&&!el.classList.contains('f3')&&!el.classList.contains('f4'))
+      el.classList.add('selecting');
+  });
+}
+
+function checkSelection(s,e){
+  if(!s||!e)return;
+  const minR=Math.min(s.r,e.r),maxR=Math.max(s.r,e.r);
+  const minC=Math.min(s.c,e.c),maxC=Math.max(s.c,e.c);
+  // must be same row or col
+  if(s.r!==e.r&&s.c!==e.c){return;}
+  if(s.r===e.r&&s.c===e.c){return;}
+
+  const match=placed.find(p=>!p.found&&p.r1===minR&&p.c1===minC&&p.r2===maxR&&p.c2===maxC);
+  if(match){
+    match.found=true;
+    const cls='f'+(match.colorIdx%5);
+    cellsInRange({r:match.r1,c:match.c1},{r:match.r2,c:match.c2}).forEach(({r,c})=>{
+      const el=document.querySelector(`.wc[data-r="${r}"][data-c="${c}"]`);
+      if(el){el.classList.remove('selecting');el.classList.add(cls);}
+    });
+    const tag=$('wtag'+placed.indexOf(match));
+    if(tag){tag.classList.add('found');tag.style.background=FOUND_COLORS[match.colorIdx%FOUND_COLORS.length];}
+    sFound();
+    const remaining=placed.filter(p=>!p.found).length;
+    if(remaining===0){
+      const gain=misses===0?3:misses<=2?2:1;
+      gainStars(gain);markDot(gain);
+      $('msg').textContent=misses===0?'パーフェクト! ぜんぶ みつけた!⭐⭐⭐':'ぜんぶ みつけた! ⭐';
+      $('msg').className='msg good';
+      confetti(misses===0?50:28);
+      $('nextBtn').textContent=pNum>=PUZZLES?'🎉 けっかを みる!':'つぎの パズル ➡';
+      $('nextBtn').style.display='';
+    }else{
+      $('msg').textContent=`「${match.word}」みつけた! あと${remaining}こ!`;
+      $('msg').className='msg good';
+    }
+  }else{
+    // wrong selection
+    misses++;updateMiss();
+    sOops();
+    const cells=cellsInRange(s,e);
+    cells.forEach(({r,c})=>{
+      const el=document.querySelector(`.wc[data-r="${r}"][data-c="${c}"]`);
+      if(el){el.classList.remove('selecting');el.classList.add('wrong');
+        setTimeout(()=>el.classList.remove('wrong'),420);}
+    });
+  }
+}
+
+const gridEl=$('wordGrid');
+gridEl.addEventListener('pointerdown',e=>{
+  const cell=cellFromEvent(e);
+  if(!cell)return;
+  gridEl.setPointerCapture(e.pointerId);
+  dragStart=cell;dragEnd=cell;
+  e.preventDefault();updateSelecting();
+});
+gridEl.addEventListener('pointermove',e=>{
+  if(!dragStart)return;
+  const cell=cellFromEvent(e);
+  if(!cell)return;
+  if(cell.r===dragStart.r||cell.c===dragStart.c){dragEnd=cell;updateSelecting();}
+});
+gridEl.addEventListener('pointerup',e=>{
+  if(!dragStart)return;
+  checkSelection(dragStart,dragEnd);
+  dragStart=null;dragEnd=null;updateSelecting();
+});
+
+/* ---------- confetti ---------- */
+function confetti(n){
+  const colors=['#FF8A5C','#3A8DDE','#FFC53D','#34C48E','#9B7BE8'];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');c.className='confetti';
+    c.style.left=Math.random()*100+'vw';c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDuration=(1.4+Math.random()*1.2)+'s';c.style.animationDelay=(Math.random()*.4)+'s';
+    document.body.appendChild(c);setTimeout(()=>c.remove(),3400);
+  }
+}
+
+/* ---------- wiring ---------- */
+document.querySelectorAll('.lv').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.lv').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');level=+b.dataset.lv;startSession();
+});
+$('nextBtn').onclick=()=>{if(pNum>=PUZZLES)showReward();else nextPuzzle();};
+$('againBtn').onclick=startSession;
+$('soundBtn').onclick=()=>{
+  muted=!muted;$('soundBtn').textContent=muted?'🔇':'🔊';
+  $('soundBtn').classList.toggle('on',muted);
+};
+$('starsPill').onclick=()=>{renderZukan();$('zukan').style.display='flex';};
+$('zClose').onclick=()=>$('zukan').style.display='none';
+$('zukan').onclick=e=>{if(e.target.id==='zukan')$('zukan').style.display='none';};
+$('uClose').onclick=()=>$('unlock').style.display='none';
+
+loadStars().finally(startSession);
+})();
+</script>
+</body>
+</html>

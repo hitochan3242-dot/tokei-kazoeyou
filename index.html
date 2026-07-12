@@ -54,6 +54,13 @@ a.card:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(31,58,95,.12);}
 .card.soon .subject{background:var(--gray);}
 .card.soon .go{visibility:hidden;}
 
+/* section headers */
+.sec-header{display:flex; align-items:center; gap:8px; margin:14px 0 4px;}
+.sec-header::before,.sec-header::after{content:''; flex:1; height:2px; border-radius:2px; background:var(--sh-color,#E3EDF7);}
+.sec-pill{display:inline-flex; align-items:center; gap:4px; font-size:13px; font-weight:900;
+  color:#fff; background:var(--sh-color,#9DB2C7); border-radius:99px; padding:4px 14px;
+  white-space:nowrap; box-shadow:0 2px 0 rgba(31,58,95,.15);}
+
 .footer{text-align:center; margin-top:26px; font-size:12px; color:var(--gray);}
 </style>
 </head>
@@ -82,13 +89,19 @@ a.card:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(31,58,95,.12);}
    file を '' (からっぽ) にすると「じゅんびちゅう」カードになります。
    ===================================================== */
 const APPS = [
-  { emoji:'⏰', subject:'さんすう', title:'とけいで かぞえよう!',
+  { sec:'math', emoji:'⏰', subject:'さんすう', title:'とけいで かぞえよう!',
     desc:'はりを うごかして「どれだけ たった?」を マスター', file:'tokei-kazoeyou.html', color:'coral' },
 
-  { emoji:'⚡', subject:'さんすう', title:'あと なんぷんで ちょうど?',
+  { sec:'math', emoji:'⚡', subject:'さんすう', title:'あと なんぷんで ちょうど?',
     desc:'ばやおしで「ちょうどまで あといくつ」を きたえる!', file:'hayaoshi.html', color:'purple' },
 
-  { emoji:'❔', subject:'じゅんびちゅう', title:'つぎの アプリ',
+  { sec:'math', emoji:'📏', subject:'さんすう', title:'ながさの もんだい',
+    desc:'mm・cm・m の かんかくを みにつけよう!', file:'nagasa.html', color:'mint' },
+
+  { sec:'lang', emoji:'🔍', subject:'こくご', title:'ことばさがし',
+    desc:'かくれた ことばを みつけよう!', file:'kotoba.html', color:'sun' },
+
+  { sec:'lang', emoji:'❔', subject:'じゅんびちゅう', title:'つぎの アプリ',
     desc:'おたのしみに!', file:'', color:'blue' },
 ];
 /* ===================================================== */
@@ -101,8 +114,23 @@ const COLORS = {
   purple:['#9B7BE8','#F0EAFC'],
 };
 
+const SEC_LABELS = {
+  math: { label:'さんすう ➕', color:'#FF8A5C' },
+  lang: { label:'こくご 📖',   color:'#34C48E' },
+};
+
 const grid = document.getElementById('grid');
+let lastSec = null;
 APPS.forEach(app=>{
+  if(app.sec && app.sec !== lastSec){
+    lastSec = app.sec;
+    const info = SEC_LABELS[app.sec] || {};
+    const sh = document.createElement('div');
+    sh.className = 'sec-header';
+    sh.style.setProperty('--sh-color', info.color || '#9DB2C7');
+    sh.innerHTML = `<span class="sec-pill">${info.label || app.sec}</span>`;
+    grid.appendChild(sh);
+  }
   const [c, cbg] = COLORS[app.color] || COLORS.blue;
   const a = document.createElement('a');
   a.className = 'card' + (app.file ? '' : ' soon');

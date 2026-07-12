@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ながさの もんだい</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF6FF; --card:#FFFFFF; --ink:#1F3A5F; --blue:#3A8DDE; --blue-d:#2E74B8;
+  --coral:#FF8A5C; --coral-d:#F0703F; --mint:#34C48E; --sun:#FFC53D; --gray:#9DB2C7;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','BIZ UDPGothic','Yu Gothic',sans-serif;
+  color:var(--ink); font-weight:700;
+  min-height:100vh; display:flex; justify-content:center;
+}
+.app{width:100%; max-width:480px; padding:12px 12px 30px;}
+.top{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+h1{font-size:18px; font-weight:900; margin:0; letter-spacing:.5px;}
+.stars{background:var(--card); border-radius:999px; padding:6px 14px; font-size:18px;
+  box-shadow:0 2px 0 rgba(31,58,95,.12); white-space:nowrap; cursor:pointer;}
+.stars b{color:var(--coral-d); font-size:20px;}
+.stars .hint{font-size:11px; color:var(--gray); margin-left:4px;}
+.levels{display:flex; gap:6px; margin-bottom:8px;}
+.lv{flex:1; border:none; border-radius:14px; padding:8px 2px; font-family:inherit; font-weight:900;
+  font-size:13px; line-height:1.3; background:#fff; color:var(--gray); cursor:pointer;
+  box-shadow:0 3px 0 rgba(31,58,95,.10);}
+.lv small{display:block; font-size:10px; font-weight:700;}
+.lv.on{background:var(--mint); color:#fff; box-shadow:0 3px 0 #26996E;}
+.progressrow{display:flex; align-items:center; gap:8px; background:#fff; border-radius:14px;
+  padding:7px 12px; margin-bottom:10px; box-shadow:0 2px 0 rgba(31,58,95,.10);}
+.pcount{font-size:13px; font-weight:900; white-space:nowrap; color:var(--blue-d);}
+.dots{display:flex; gap:5px; flex:1; justify-content:flex-end;}
+.dot{width:19px; height:19px; border-radius:50%; background:#E3EDF7; border:2px solid #C4D3E3;
+  display:flex; align-items:center; justify-content:center; font-size:11px; transition:transform .2s;}
+.dot.now{border-color:var(--mint); background:#D0F5E8;}
+.dot.got2{background:var(--mint); border-color:#26996E; transform:scale(1.12);}
+.dot.got1{background:var(--sun); border-color:#D9A324; transform:scale(1.12);}
+/* card */
+.card{background:var(--card); border-radius:24px; padding:14px 10px 12px; box-shadow:0 4px 0 rgba(31,58,95,.10);}
+#rulerWrap svg{width:100%; height:auto; display:block;}
+.q{text-align:center; font-size:17px; margin:10px 0 6px; line-height:1.5;}
+.q b{color:var(--coral-d); font-size:22px;}
+/* choices */
+.choices{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
+.choice{border:none; border-radius:18px; padding:16px; font-family:inherit; font-size:22px; font-weight:900;
+  background:#fff; color:var(--ink); cursor:pointer; box-shadow:0 4px 0 rgba(31,58,95,.15);
+  transition:transform .08s;}
+.choice:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(31,58,95,.15);}
+.choice:disabled{opacity:.55;}
+.choice.right{background:var(--mint); color:#fff; box-shadow:0 4px 0 #26996E; opacity:1!important;}
+.choice.wrong{background:#FFE1E1; color:#D65B5B; opacity:1!important;}
+/* actions */
+.actions{display:flex; gap:8px; margin-top:12px;}
+.act{flex:1; border:none; border-radius:16px; padding:12px; font-family:inherit; font-size:16px; font-weight:900;
+  cursor:pointer; box-shadow:0 3px 0 rgba(31,58,95,.15); background:#fff; color:var(--blue-d);}
+.act.primary{background:var(--sun); color:#7A5200; box-shadow:0 3px 0 #D9A324;}
+.act.icon{flex:0 0 64px; font-size:20px;}
+.act.icon.on{background:var(--blue); color:#fff; box-shadow:0 3px 0 var(--blue-d);}
+.spacer{flex:1;}
+.msg{text-align:center; min-height:44px; font-size:16px; font-weight:900; margin-top:8px; line-height:1.5;}
+.msg.good{color:var(--mint);} .msg.oops{color:var(--coral-d);} .msg.think{color:var(--blue-d);}
+/* reward */
+.reward{position:fixed; inset:0; background:rgba(31,58,95,.45); display:none; align-items:center;
+  justify-content:center; z-index:60; padding:20px;}
+.rewardcard{background:#fff; border-radius:28px; padding:28px 24px; text-align:center; max-width:340px; width:100%;
+  box-shadow:0 8px 0 rgba(31,58,95,.25); animation:popin .35s;}
+@keyframes popin{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+.rewardcard .big{font-size:64px; line-height:1;}
+.rewardcard h2{font-size:24px; font-weight:900; margin:10px 0 4px;}
+.rewardcard .rstars{font-size:26px; font-weight:900; color:var(--coral-d); margin:8px 0 2px;}
+.rewardcard .rtotal{font-size:14px; color:var(--gray); margin-bottom:16px;}
+.rewardcard .rmsg{font-size:16px; margin-bottom:18px;}
+.rewardcard button{width:100%; border:none; border-radius:18px; padding:15px; font-family:inherit;
+  font-size:18px; font-weight:900; background:var(--sun); color:#7A5200; box-shadow:0 4px 0 #D9A324; cursor:pointer;}
+/* zukan */
+.stars{cursor:pointer;}
+.zukan{position:fixed; inset:0; background:rgba(31,58,95,.45); display:none; align-items:flex-end; justify-content:center; z-index:62;}
+.zukancard{background:#fff; border-radius:28px 28px 0 0; padding:20px 18px 26px; width:100%; max-width:480px; max-height:82vh; overflow:auto;}
+.zukancard h2{font-size:20px; font-weight:900; margin:0 0 4px; text-align:center;}
+.znext{text-align:center; font-size:13px; font-weight:900; color:var(--blue-d); margin-bottom:6px;}
+.zbar{height:12px; background:#E3EDF7; border-radius:99px; overflow:hidden; margin:0 10px 14px;}
+.zbar>div{height:100%; background:linear-gradient(90deg,var(--sun),var(--coral)); border-radius:99px; transition:width .4s;}
+.zgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+.badge{background:#F4F9FF; border-radius:18px; padding:12px 6px; text-align:center;}
+.badge .be{font-size:34px; line-height:1.1;}
+.badge .bn{font-size:12px; font-weight:900; margin-top:4px;}
+.badge .bt{font-size:11px; color:var(--gray);}
+.badge.locked .be{filter:grayscale(1); opacity:.45;}
+.badge.locked .bn{color:var(--gray);}
+.zclose{width:100%; margin-top:14px; border:none; border-radius:16px; padding:13px; font-family:inherit;
+  font-size:16px; font-weight:900; background:var(--blue); color:#fff; box-shadow:0 3px 0 var(--blue-d); cursor:pointer;}
+/* unlock */
+.unlock{position:fixed; inset:0; background:rgba(31,58,95,.45); display:none; align-items:center; justify-content:center; z-index:65; padding:20px;}
+.unlockcard{background:#fff; border-radius:28px; padding:26px 22px; text-align:center; max-width:320px; width:100%;
+  box-shadow:0 8px 0 rgba(31,58,95,.25); animation:popin .35s;}
+.unlockcard .ue{font-size:70px; line-height:1;}
+.unlockcard h3{font-size:20px; font-weight:900; margin:8px 0 2px; color:var(--coral-d);}
+.unlockcard .un{font-size:22px; font-weight:900; margin-bottom:16px;}
+.unlockcard button{width:100%; border:none; border-radius:16px; padding:13px; font-family:inherit;
+  font-size:17px; font-weight:900; background:var(--sun); color:#7A5200; box-shadow:0 3px 0 #D9A324; cursor:pointer;}
+/* confetti */
+.confetti{position:fixed; top:-12px; width:10px; height:14px; border-radius:3px; pointer-events:none; z-index:70;
+  animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
+@media (prefers-reduced-motion:reduce){.rewardcard,.unlockcard{animation:none;} .confetti{display:none;}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a href="index.html" style="text-decoration:none;font-size:20px;background:#fff;border-radius:12px;padding:6px 10px;box-shadow:0 2px 0 rgba(31,58,95,.12);" title="もくじへ">🏠</a>
+    <h1>📏 ながさの もんだい</h1>
+    <div class="stars" id="starsPill">⭐<b id="stars">0</b><span class="hint">📖ずかん</span></div>
+  </div>
+
+  <div class="levels">
+    <button class="lv on" data-lv="1">レベル1<small>mm・cm へんかん</small></button>
+    <button class="lv" data-lv="2">レベル2<small>ながさくらべ</small></button>
+    <button class="lv" data-lv="3">レベル3<small>けいさん</small></button>
+  </div>
+
+  <div class="progressrow">
+    <div class="pcount" id="pcount">もんだい 1/10</div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="card">
+    <div id="rulerWrap"></div>
+    <div class="q" id="qText"></div>
+  </div>
+
+  <div class="choices" id="choices"></div>
+  <div class="msg think" id="msg"></div>
+
+  <div class="actions">
+    <button class="act icon" id="soundBtn" title="おと">🔊</button>
+    <div class="spacer"></div>
+    <button class="act primary" id="nextBtn" style="display:none">つぎの もんだい ➡</button>
+  </div>
+</div>
+
+<div class="reward" id="reward" style="display:none">
+  <div class="rewardcard">
+    <div class="big" id="rEmoji">🏆</div>
+    <h2 id="rTitle">クリア!</h2>
+    <div class="rstars" id="rStars"></div>
+    <div class="rtotal" id="rTotal"></div>
+    <div class="rmsg" id="rMsg"></div>
+    <button id="againBtn">もういちど あそぶ ▶</button>
+  </div>
+</div>
+
+<div class="zukan" id="zukan" style="display:none">
+  <div class="zukancard">
+    <h2>🏅 バッジずかん</h2>
+    <div class="znext" id="znext"></div>
+    <div class="zbar"><div id="zbarFill" style="width:0%"></div></div>
+    <div class="zgrid" id="zgrid"></div>
+    <button class="zclose" id="zClose">とじる</button>
+  </div>
+</div>
+
+<div class="unlock" id="unlock" style="display:none">
+  <div class="unlockcard">
+    <div class="ue" id="uEmoji">🏅</div>
+    <h3>バッジ ゲット!</h3>
+    <div class="un" id="uName"></div>
+    <button id="uClose">やったー!</button>
+  </div>
+</div>
+
+<script>
+(() => {
+const QUESTIONS = 10;
+const $=id=>document.getElementById(id);
+
+/* ---------- sound ---------- */
+let actx=null, muted=false;
+function audio(){
+  if(muted)return null;
+  if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}
+  if(actx.state==='suspended')actx.resume();
+  return actx;
+}
+function tone(freq,t0,len,type='sine',vol=0.18){
+  const ac=audio();if(!ac)return;
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.type=type;o.frequency.value=freq;
+  const s=ac.currentTime+t0;
+  g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(vol,s+0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001,s+len);
+  o.connect(g);g.connect(ac.destination);o.start(s);o.stop(s+len+0.05);
+}
+const sRight  =()=>{tone(784,0,.15,'sine',.25);tone(1175,.14,.35,'sine',.25);};
+const sOops   =()=>{tone(330,0,.2,'sine',.14);tone(294,.18,.3,'sine',.12);};
+const sPick   =()=>tone(600,0,.08,'triangle',.12);
+const sFanfare=()=>{[523,659,784,1047].forEach((f,i)=>tone(f,i*.14,.32,'sine',.22));tone(1319,.6,.5,'sine',.22);};
+
+/* ---------- helpers ---------- */
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const range=(a,b,s=1)=>{const o=[];for(let i=a;i<=b;i+=s)o.push(i);return o;};
+const fmtLen=(cm,mm)=>mm===0?`${cm}cm`:`${cm}cm${mm}mm`;
+const fmtMm=mm=>mm%10===0?`${mm/10}cm`:`${fmtLen(Math.floor(mm/10),mm%10)}`;
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+
+/* ---------- SVG ruler ---------- */
+const NS='http://www.w3.org/2000/svg';
+const svgEl=(n,at)=>{const e=document.createElementNS(NS,n);for(const k in at)e.setAttribute(k,at[k]);return e;};
+
+function buildRuler(prob){
+  const W=340, PL=34, PR=16, RY=66, H=110;
+  let maxCm=10;
+  if(prob.type==='add') maxCm=Math.ceil((prob.a+prob.b)/10)+1;
+  else if(prob.type==='sub') maxCm=Math.ceil(prob.a/10)+1;
+  else if(prob.type==='cm2mm'||prob.type==='cmm2mm') maxCm=Math.max(prob.cm+1,5);
+  else if(prob.type==='mm2cmm') maxCm=Math.max(Math.ceil(prob.mm/10)+1,5);
+  else if(prob.type==='compare') maxCm=Math.max(Math.ceil(Math.max(prob.a,prob.b)/10)+1,5);
+  maxCm=Math.min(maxCm,15);
+  const avail=W-PL-PR;
+  const ppm=avail/(maxCm*10);
+  const toX=mm=>PL+mm*ppm;
+
+  const svg=svgEl('svg',{viewBox:`0 0 ${W} ${H}`});
+
+  /* ruler body */
+  svg.appendChild(svgEl('rect',{x:PL,y:RY-2,width:avail,height:4,rx:2,fill:'#C4D3E3'}));
+
+  /* ticks + labels */
+  for(let mm=0;mm<=maxCm*10;mm++){
+    const x=toX(mm), big=mm%10===0, mid=mm%5===0;
+    const th=big?18:mid?10:6;
+    svg.appendChild(svgEl('line',{x1:x,y1:RY-th,x2:x,y2:RY,
+      stroke:big?'#1F3A5F':mid?'#9DB2C7':'#C4D3E3','stroke-width':big?2.5:1,'stroke-linecap':'round'}));
+    if(big){
+      const t=svgEl('text',{x,y:RY+16,'text-anchor':'middle','font-size':12,'font-weight':900,fill:'#1F3A5F','font-family':'inherit'});
+      t.textContent=mm/10+'cm'; svg.appendChild(t);
+    }
+  }
+
+  /* draw bar(s) */
+  const BAR_H=14, BAR_Y=RY-BAR_H-6;
+  const BAR2_Y=BAR_Y-BAR_H-4;
+
+  function bar(startMm,endMm,color,y,opacity=1){
+    const x1=toX(startMm),x2=toX(endMm);
+    svg.appendChild(svgEl('rect',{x:x1,y,width:x2-x1,height:BAR_H,rx:5,fill:color,opacity}));
+  }
+  function qmark(atMm,y){
+    const x=toX(atMm);
+    const t=svgEl('text',{x,y:y+BAR_H-2,'text-anchor':'middle','font-size':13,'font-weight':900,fill:'#9B7BE8','font-family':'inherit'});
+    t.textContent='?'; svg.appendChild(t);
+    svg.appendChild(svgEl('rect',{x:x-11,y,width:22,height:BAR_H,rx:5,fill:'none',stroke:'#9B7BE8','stroke-width':2,'stroke-dasharray':'4 2'}));
+  }
+  function label(text,atMm,y,color){
+    const t=svgEl('text',{x:toX(atMm),y:y-3,'text-anchor':'middle','font-size':11,'font-weight':900,fill:color,'font-family':'inherit'});
+    t.textContent=text; svg.appendChild(t);
+  }
+
+  if(prob.type==='cm2mm'){
+    bar(0,prob.cm*10,'#FF8A5C',BAR_Y);
+    label(prob.cm+'cm',prob.cm*5,BAR_Y,'#F0703F');
+  } else if(prob.type==='mm2cmm'){
+    bar(0,prob.mm,'#3A8DDE',BAR_Y);
+    label(prob.mm+'mm',prob.mm/2,BAR_Y,'#2E74B8');
+  } else if(prob.type==='cmm2mm'){
+    bar(0,prob.cm*10+prob.mm,'#FF8A5C',BAR_Y);
+    label(fmtLen(prob.cm,prob.mm),(prob.cm*10+prob.mm)/2,BAR_Y,'#F0703F');
+  } else if(prob.type==='compare'){
+    bar(0,prob.a,'#3A8DDE',BAR_Y);
+    label('あ: '+fmtMm(prob.a),prob.a/2,BAR_Y,'#2E74B8');
+    bar(0,prob.b,'#FF8A5C',BAR2_Y);
+    label('い: '+fmtMm(prob.b),prob.b/2,BAR2_Y,'#F0703F');
+  } else if(prob.type==='add'){
+    bar(0,prob.a,'#3A8DDE',BAR_Y);
+    label('あ',prob.a/2,BAR_Y,'#2E74B8');
+    bar(prob.a,prob.a+prob.b,'#34C48E',BAR_Y);
+    label('い',prob.a+prob.b/2,BAR_Y,'#26996E');
+    qmark(prob.a+prob.b+5,BAR_Y);
+  } else if(prob.type==='sub'){
+    bar(0,prob.a,'#FF8A5C',BAR_Y,.35);
+    bar(0,prob.b,'#FF8A5C',BAR_Y);
+    label('ひく: '+fmtMm(prob.b),prob.b/2,BAR_Y,'#F0703F');
+    qmark(prob.a-5,BAR_Y);
+  }
+
+  $('rulerWrap').replaceChildren(svg);
+}
+
+/* ---------- badges ---------- */
+const BADGES=[
+  {n:10, e:'📏',name:'ながさの たまご'},
+  {n:25, e:'📐',name:'ものさし キッズ'},
+  {n:50, e:'🥉',name:'どうメダル'},
+  {n:80, e:'🥈',name:'ぎんメダル'},
+  {n:120,e:'🥇',name:'きんメダル'},
+  {n:180,e:'💎',name:'ダイヤの ものさし'},
+  {n:250,e:'🔭',name:'けんちくか きゅう'},
+  {n:350,e:'🏗️',name:'せっけいし きゅう'},
+  {n:450,e:'🌍',name:'ちず たんけんか'},
+  {n:600,e:'🏆',name:'ながさ マスター'},
+];
+let stars=0;
+const unlockedCount=s=>BADGES.filter(b=>s>=b.n).length;
+async function saveStars(){try{if(window.storage)await window.storage.set('nagasa-stars',String(stars));}catch(e){}}
+async function loadStars(){
+  try{if(window.storage){const r=await window.storage.get('nagasa-stars');if(r&&r.value)stars=parseInt(r.value)||0;}}catch(e){}
+  $('stars').textContent=stars;
+}
+function renderZukan(){
+  const g=$('zgrid');g.replaceChildren();
+  BADGES.forEach(b=>{
+    const got=stars>=b.n,d=document.createElement('div');
+    d.className='badge'+(got?'':' locked');
+    d.innerHTML=`<div class="be">${got?b.e:'❔'}</div><div class="bn">${got?b.name:'? ? ?'}</div><div class="bt">⭐${b.n}</div>`;
+    g.appendChild(d);
+  });
+  const next=BADGES.find(b=>stars<b.n);
+  if(next){
+    const prev=[...BADGES].reverse().find(b=>stars>=b.n);
+    const base=prev?prev.n:0;
+    $('znext').textContent=`つぎのバッジまで あと⭐${next.n-stars}こ!`;
+    $('zbarFill').style.width=Math.min(100,(stars-base)/(next.n-base)*100)+'%';
+  }else{$('znext').textContent='ぜんぶ あつめた!🎉';$('zbarFill').style.width='100%';}
+}
+function showUnlock(b){$('uEmoji').textContent=b.e;$('uName').textContent=b.name;$('unlock').style.display='flex';sFanfare();confetti(40);}
+function gainStars(gain){
+  const before=unlockedCount(stars);
+  stars+=gain;sessionStars+=gain;$('stars').textContent=stars;saveStars();
+  if(unlockedCount(stars)>before){const b=BADGES[unlockedCount(stars)-1];setTimeout(()=>showUnlock(b),900);}
+}
+
+/* ---------- state ---------- */
+let level=1,prob=null,answered=false;
+let qNum=0,sessionStars=0;
+
+/* ---------- session ---------- */
+function buildDots(){
+  const box=$('dots');box.replaceChildren();
+  for(let i=0;i<QUESTIONS;i++){const d=document.createElement('div');d.className='dot';box.appendChild(d);}
+}
+function startSession(){qNum=0;sessionStars=0;buildDots();$('reward').style.display='none';nextQuestion();}
+function nextQuestion(){
+  qNum++;
+  $('pcount').textContent=`もんだい ${qNum}/${QUESTIONS}`;
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('now',i===qNum-1));
+  showProblem();
+}
+function markDot(gain){
+  const d=document.querySelectorAll('.dot')[qNum-1];if(!d)return;
+  d.classList.remove('now');d.classList.add(gain>=2?'got2':'got1');d.textContent='⭐';
+}
+function showReward(){
+  const max=QUESTIONS*2;
+  let emoji,title,msg;
+  if(sessionStars>=max){emoji='🏆';title='パーフェクト!';msg='ぜんぶ じぶんで できた!さすが!';}
+  else if(sessionStars>=max*.7){emoji='🌟';title='すごい!クリア!';msg='ながさの かんかく バッチリだ!';}
+  else{emoji='💪';title='がんばった!';msg='やればやるほど うまくなるよ!';}
+  $('rEmoji').textContent=emoji;$('rTitle').textContent=title;
+  $('rStars').textContent=`⭐×${sessionStars} ゲット!`;$('rTotal').textContent=`ぜんぶで ⭐${stars}こ`;
+  $('rMsg').textContent=msg;$('reward').style.display='flex';sFanfare();confetti(60);
+}
+
+/* ---------- problem generation ---------- */
+function makeProblem(){
+  if(level===1){
+    const type=rnd(['cm2mm','mm2cmm','cmm2mm','cm2mm','mm2cmm']);
+    if(type==='cm2mm'){
+      const cm=rnd(range(1,12));return{type,cm,ans:cm*10};
+    }else if(type==='mm2cmm'){
+      const mm=rnd(range(11,99).filter(x=>x%10!==0));
+      return{type,mm,ans:{cm:Math.floor(mm/10),mm:mm%10}};
+    }else{
+      const cm=rnd(range(1,9)),mm=rnd(range(1,9));
+      return{type,cm,mm,ans:cm*10+mm};
+    }
+  }else if(level===2){
+    let a,b;
+    do{a=rnd(range(10,90));b=rnd(range(10,90));}while(Math.abs(a-b)<3||a===b);
+    return{type:'compare',a,b,ans:a>b?'あ':'い'};
+  }else{
+    const op=rnd(['add','add','sub']);
+    if(op==='add'){
+      const a=rnd(range(10,70));const b=rnd(range(5,30));
+      const tot=a+b;const tc=Math.floor(tot/10),tm=tot%10;
+      return{type:'add',a,b,ans:{cm:tc,mm:tm},label:`${fmtMm(a)} + ${fmtMm(b)}`};
+    }else{
+      let a,b;
+      do{a=rnd(range(30,99));b=rnd(range(5,a-5));}while(a-b<=0);
+      const tot=a-b;const tc=Math.floor(tot/10),tm=tot%10;
+      return{type:'sub',a,b,ans:{cm:tc,mm:tm},label:`${fmtMm(a)} - ${fmtMm(b)}`};
+    }
+  }
+}
+
+function makeChoices(p){
+  if(p.type==='cm2mm'){
+    const a=p.ans;
+    return shuffle([a,a+10,a-10,a+5].filter(v=>v>0&&v<=150));
+  }else if(p.type==='mm2cmm'){
+    const {cm,mm}=p.ans;
+    const variants=[{cm,mm},{cm:cm+1,mm:Math.max(0,mm-5)},{cm:Math.max(1,cm-1),mm:mm+3<=9?mm+3:5}];
+    return shuffle(variants).slice(0,3).map(v=>fmtLen(v.cm,v.mm));
+  }else if(p.type==='cmm2mm'){
+    const a=p.ans;
+    return shuffle([a,a+10,a-5,a+5].filter(v=>v>0));
+  }else if(p.type==='compare'){
+    return shuffle(['あ','い']);
+  }else{
+    const {cm,mm}=p.ans,tot=cm*10+mm;
+    return shuffle([fmtLen(cm,mm),fmtLen(Math.max(0,cm-1),mm),fmtLen(cm+1,mm),fmtLen(cm,Math.min(9,mm+2))]
+      .filter((v,i,a)=>a.indexOf(v)===i)).slice(0,3);
+  }
+}
+
+function answerStr(p){
+  if(p.type==='cm2mm') return p.ans+'mm';
+  if(p.type==='mm2cmm') return fmtLen(p.ans.cm,p.ans.mm);
+  if(p.type==='cmm2mm') return p.ans+'mm';
+  if(p.type==='compare') return p.ans;
+  return fmtLen(p.ans.cm,p.ans.mm);
+}
+
+function questionText(p){
+  if(p.type==='cm2mm') return `<b>${p.cm}cm</b> は なんmm?`;
+  if(p.type==='mm2cmm') return `<b>${p.mm}mm</b> は なんcm なんmm?`;
+  if(p.type==='cmm2mm') return `<b>${fmtLen(p.cm,p.mm)}</b> は なんmm?`;
+  if(p.type==='compare') return `<b>あ</b> と <b>い</b>、どちらが ながい?`;
+  if(p.type==='add') return `${fmtMm(p.a)} + ${fmtMm(p.b)} = ?`;
+  return `${fmtMm(p.a)} − ${fmtMm(p.b)} = ?`;
+}
+
+/* ---------- render ---------- */
+function showProblem(){
+  prob=makeProblem();answered=false;
+  buildRuler(prob);
+  $('qText').innerHTML=questionText(prob);
+  $('msg').textContent='';$('msg').className='msg think';
+  $('nextBtn').style.display='none';
+  const box=$('choices');box.replaceChildren();
+  const choices=makeChoices(prob);
+  const correct=answerStr(prob);
+  choices.slice(0,3).forEach(v=>{
+    if(!v)return;
+    const b=document.createElement('button');
+    b.className='choice';b.textContent=v;b.dataset.val=v;
+    b.onclick=()=>pick(b,v,correct);
+    box.appendChild(b);
+  });
+}
+
+function pick(btn,val,correct){
+  if(answered)return;
+  answered=true;audio();sPick();
+  btn.classList.add('picked');
+  document.querySelectorAll('.choice').forEach(b=>b.disabled=true);
+  const ok=val===correct;
+  document.querySelectorAll('.choice').forEach(b=>{
+    if(b.dataset.val===correct)b.classList.add('right');
+    else if(b.classList.contains('picked'))b.classList.add('wrong');
+  });
+  const gain=ok?2:1;
+  if(ok){sRight();$('msg').textContent=`せいかい! ⭐+2`;$('msg').className='msg good';confetti(22);}
+  else{sOops();$('msg').textContent=`こたえは「${correct}」だったよ! ⭐+1`;$('msg').className='msg oops';}
+  gainStars(gain);markDot(gain);
+  $('nextBtn').textContent=qNum>=QUESTIONS?'🎉 けっかを みる!':'つぎの もんだい ➡';
+  $('nextBtn').style.display='';
+}
+
+/* ---------- confetti ---------- */
+function confetti(n){
+  const colors=['#FF8A5C','#3A8DDE','#FFC53D','#34C48E','#B48CF2'];
+  const rndC=()=>colors[Math.floor(Math.random()*colors.length)];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');c.className='confetti';
+    c.style.left=Math.random()*100+'vw';c.style.background=rndC();
+    c.style.animationDuration=(1.4+Math.random()*1.2)+'s';c.style.animationDelay=(Math.random()*.4)+'s';
+    document.body.appendChild(c);setTimeout(()=>c.remove(),3400);
+  }
+}
+
+/* ---------- wiring ---------- */
+document.querySelectorAll('.lv').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.lv').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');level=+b.dataset.lv;startSession();
+});
+$('nextBtn').onclick=()=>{if(qNum>=QUESTIONS)showReward();else nextQuestion();};
+$('againBtn').onclick=startSession;
+$('soundBtn').onclick=()=>{
+  muted=!muted;$('soundBtn').textContent=muted?'🔇':'🔊';
+  $('soundBtn').classList.toggle('on',muted);if(!muted){audio();sPick();}
+};
+$('starsPill').onclick=()=>{renderZukan();$('zukan').style.display='flex';};
+$('zClose').onclick=()=>$('zukan').style.display='none';
+$('zukan').onclick=e=>{if(e.target.id==='zukan')$('zukan').style.display='none';};
+$('uClose').onclick=()=>$('unlock').style.display='none';
+
+loadStars().finally(startSession);
+})();
+</script>
+</body>
+</html>
