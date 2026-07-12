@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>とけいで かぞえよう!</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF6FF; --card:#FFFFFF; --ink:#1F3A5F; --blue:#3A8DDE; --blue-d:#2E74B8;
+  --coral:#FF8A5C; --coral-d:#F0703F; --mint:#34C48E; --sun:#FFC53D; --gray:#9DB2C7;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','BIZ UDPGothic','Yu Gothic',sans-serif;
+  color:var(--ink); font-weight:700;
+  min-height:100vh; display:flex; justify-content:center;
+}
+.app{width:100%; max-width:480px; padding:12px 12px 30px;}
+/* ---------- header ---------- */
+.top{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+h1{font-size:19px; font-weight:900; margin:0; letter-spacing:1px;}
+.stars{background:var(--card); border-radius:999px; padding:6px 14px; font-size:18px;
+  box-shadow:0 2px 0 rgba(31,58,95,.12); white-space:nowrap;}
+.stars b{color:var(--coral-d); font-size:20px;}
+/* ---------- level tabs ---------- */
+.levels{display:flex; gap:6px; margin-bottom:8px;}
+.lv{flex:1; border:none; border-radius:14px; padding:8px 2px; font-family:inherit; font-weight:900;
+  font-size:13px; line-height:1.3; background:#fff; color:var(--gray); cursor:pointer;
+  box-shadow:0 3px 0 rgba(31,58,95,.10);}
+.lv small{display:block; font-size:10px; font-weight:700;}
+.lv.on{background:var(--blue); color:#fff; box-shadow:0 3px 0 var(--blue-d);}
+/* ---------- session progress ---------- */
+.progressrow{display:flex; align-items:center; gap:8px; background:#fff; border-radius:14px;
+  padding:7px 12px; margin-bottom:10px; box-shadow:0 2px 0 rgba(31,58,95,.10);}
+.pcount{font-size:13px; font-weight:900; white-space:nowrap; color:var(--blue-d);}
+.dots{display:flex; gap:5px; flex:1; justify-content:flex-end;}
+.dot{width:19px; height:19px; border-radius:50%; background:#E3EDF7; border:2px solid #C4D3E3;
+  display:flex; align-items:center; justify-content:center; font-size:11px; transition:transform .2s;}
+.dot.now{border-color:var(--blue); background:#D9EBFC;}
+.dot.got2{background:var(--mint); border-color:#26996E; transform:scale(1.12);}
+.dot.got1{background:var(--sun); border-color:#D9A324; transform:scale(1.12);}
+/* ---------- two clocks ---------- */
+.card{background:var(--card); border-radius:24px; padding:12px 8px 12px; box-shadow:0 4px 0 rgba(31,58,95,.10);}
+.clockrow{display:flex; align-items:flex-start; justify-content:center; gap:2px;}
+.clockcol{flex:1; min-width:0; display:flex; flex-direction:column; align-items:center;}
+.clockcol svg{width:100%; max-width:215px; height:auto; display:block;}
+.midarrow{align-self:center; font-size:22px; padding:0 1px; color:var(--ink); flex:0 0 auto;}
+.clabel{border-radius:14px; padding:4px 12px; color:#fff; text-align:center; margin-top:2px; min-width:110px;}
+.clabel .tag{font-size:11px; opacity:.92; line-height:1.1;}
+.clabel .t{font-size:19px; font-weight:900; letter-spacing:.5px; line-height:1.2;}
+.clabel.start{background:var(--blue);}
+.clabel.end{background:var(--coral);}
+/* ---------- number line ---------- */
+.numline{display:none; margin-top:8px; padding-top:8px; border-top:2px dashed #E3EDF7;}
+.numline svg{width:100%; height:auto; display:block;}
+/* ---------- counter ---------- */
+.counter{min-height:50px; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:4px;}
+.counter .num{font-size:32px; font-weight:900; color:var(--coral-d); transition:transform .15s;}
+.counter .num.pop{transform:scale(1.35);}
+.counter .lbl{font-size:14px; color:var(--gray);}
+.answerBig{font-size:28px; font-weight:900; color:var(--mint);}
+/* ---------- question / buttons ---------- */
+.q{ text-align:center; font-size:16px; margin:10px 0 8px;}
+.choices{display:flex; flex-direction:column; gap:10px;}
+.choice{border:none; border-radius:18px; padding:15px; font-family:inherit; font-size:22px; font-weight:900;
+  background:#fff; color:var(--ink); cursor:pointer; box-shadow:0 4px 0 rgba(31,58,95,.15);
+  transition:transform .08s;}
+.choice:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(31,58,95,.15);}
+.choice:disabled{opacity:.55;}
+.choice.picked{outline:4px solid var(--blue); outline-offset:-2px; opacity:1 !important;}
+.choice.right{background:var(--mint); color:#fff; box-shadow:0 4px 0 #26996E; opacity:1 !important;}
+.choice.wrong{background:#FFE1E1; color:#D65B5B; opacity:1 !important;}
+/* ---------- footer actions ---------- */
+.actions{display:flex; gap:8px; margin-top:12px;}
+.act{flex:1; border:none; border-radius:16px; padding:12px; font-family:inherit; font-size:16px; font-weight:900;
+  cursor:pointer; box-shadow:0 3px 0 rgba(31,58,95,.15); background:#fff; color:var(--blue-d);}
+.act.primary{background:var(--sun); color:#7A5200; box-shadow:0 3px 0 #D9A324;}
+.act.icon{flex:0 0 64px; font-size:20px;}
+.act.icon.on{background:var(--blue); color:#fff; box-shadow:0 3px 0 var(--blue-d);}
+.act:disabled{opacity:.4;}
+.spacer{flex:1;}
+.msg{text-align:center; min-height:44px; font-size:17px; font-weight:900; margin-top:8px; line-height:1.4;}
+.msg.good{color:var(--mint);} .msg.oops{color:var(--coral-d);} .msg.think{color:var(--blue-d);}
+/* ---------- reward screen ---------- */
+.reward{position:fixed; inset:0; background:rgba(31,58,95,.45); display:flex; align-items:center;
+  justify-content:center; z-index:60; padding:20px;}
+.rewardcard{background:#fff; border-radius:28px; padding:28px 24px; text-align:center; max-width:340px; width:100%;
+  box-shadow:0 8px 0 rgba(31,58,95,.25); animation:popin .35s;}
+@keyframes popin{from{transform:scale(.7); opacity:0;} to{transform:scale(1); opacity:1;}}
+.rewardcard .big{font-size:64px; line-height:1;}
+.rewardcard h2{font-size:24px; font-weight:900; margin:10px 0 4px;}
+.rewardcard .rstars{font-size:26px; font-weight:900; color:var(--coral-d); margin:8px 0 2px;}
+.rewardcard .rtotal{font-size:14px; color:var(--gray); margin-bottom:16px;}
+.rewardcard .rmsg{font-size:16px; margin-bottom:18px;}
+.rewardcard button{width:100%; border:none; border-radius:18px; padding:15px; font-family:inherit;
+  font-size:18px; font-weight:900; background:var(--sun); color:#7A5200; box-shadow:0 4px 0 #D9A324; cursor:pointer;}
+@media (prefers-reduced-motion: reduce){ .rewardcard{animation:none;} }
+/* ---------- badge zukan ---------- */
+.stars{cursor:pointer;}
+.stars .hint{font-size:11px; color:var(--gray); margin-left:4px;}
+.zukan{position:fixed; inset:0; background:rgba(31,58,95,.45); display:none; align-items:flex-end; justify-content:center; z-index:62;}
+.zukancard{background:#fff; border-radius:28px 28px 0 0; padding:20px 18px 26px; width:100%; max-width:480px; max-height:82vh; overflow:auto;}
+.zukancard h2{font-size:20px; font-weight:900; margin:0 0 4px; text-align:center;}
+.znext{text-align:center; font-size:13px; font-weight:900; color:var(--blue-d); margin-bottom:6px;}
+.zbar{height:12px; background:#E3EDF7; border-radius:99px; overflow:hidden; margin:0 10px 14px;}
+.zbar>div{height:100%; background:linear-gradient(90deg,var(--sun),var(--coral)); border-radius:99px; transition:width .4s;}
+.zgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+.badge{background:#F4F9FF; border-radius:18px; padding:12px 6px; text-align:center;}
+.badge .be{font-size:34px; line-height:1.1;}
+.badge .bn{font-size:12px; font-weight:900; margin-top:4px;}
+.badge .bt{font-size:11px; color:var(--gray);}
+.badge.locked .be{filter:grayscale(1); opacity:.45;}
+.badge.locked .bn{color:var(--gray);}
+.zclose{width:100%; margin-top:14px; border:none; border-radius:16px; padding:13px; font-family:inherit;
+  font-size:16px; font-weight:900; background:var(--blue); color:#fff; box-shadow:0 3px 0 var(--blue-d); cursor:pointer;}
+/* ---------- badge unlock popup ---------- */
+.unlock{position:fixed; inset:0; background:rgba(31,58,95,.45); display:none; align-items:center; justify-content:center; z-index:65; padding:20px;}
+.unlockcard{background:#fff; border-radius:28px; padding:26px 22px; text-align:center; max-width:320px; width:100%;
+  box-shadow:0 8px 0 rgba(31,58,95,.25); animation:popin .35s;}
+.unlockcard .ue{font-size:70px; line-height:1;}
+.unlockcard h3{font-size:20px; font-weight:900; margin:8px 0 2px; color:var(--coral-d);}
+.unlockcard .un{font-size:22px; font-weight:900; margin-bottom:16px;}
+.unlockcard button{width:100%; border:none; border-radius:16px; padding:13px; font-family:inherit;
+  font-size:17px; font-weight:900; background:var(--sun); color:#7A5200; box-shadow:0 3px 0 #D9A324; cursor:pointer;}
+@media (prefers-reduced-motion: reduce){ .unlockcard{animation:none;} }
+/* ---------- confetti ---------- */
+.confetti{position:fixed; top:-12px; width:10px; height:14px; border-radius:3px; pointer-events:none; z-index:70;
+  animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
+@media (prefers-reduced-motion: reduce){ .confetti{display:none;} }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a href="index.html" style="text-decoration:none; font-size:20px; background:#fff; border-radius:12px; padding:6px 10px; box-shadow:0 2px 0 rgba(31,58,95,.12);" title="もくじへ">🏠</a>
+    <h1>⏰ とけいで かぞえよう!</h1>
+    <div class="stars" id="starsPill">⭐<b id="stars">0</b><span class="hint">📖ずかん</span></div>
+  </div>
+
+  <div class="levels">
+    <button class="lv on" data-lv="1">レベル1<small>おなじ じ</small></button>
+    <button class="lv" data-lv="2">レベル2<small>じを またぐ</small></button>
+    <button class="lv" data-lv="3">レベル3<small>じかんも!</small></button>
+  </div>
+
+  <div class="progressrow">
+    <div class="pcount" id="pcount">もんだい 1/10</div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="card">
+    <div class="clockrow">
+      <div class="clockcol">
+        <div id="clockA"></div>
+        <div class="clabel start"><div class="tag">はじめ</div><div class="t" id="tStart">--</div></div>
+      </div>
+      <div class="midarrow">➡</div>
+      <div class="clockcol">
+        <div id="clockB"></div>
+        <div class="clabel end"><div class="tag">おわり</div><div class="t" id="tEnd">--</div></div>
+      </div>
+    </div>
+    <div class="numline" id="numline"></div>
+    <div class="counter" id="counter"></div>
+  </div>
+
+  <div class="q" id="qText">はじめから おわりまで、どれだけ たった?</div>
+  <div class="choices" id="choices"></div>
+  <div class="msg think" id="msg"></div>
+
+  <div class="actions">
+    <button class="act icon" id="slowBtn" title="ゆっくり">🐢</button>
+    <button class="act icon" id="soundBtn" title="おと">🔊</button>
+    <div class="spacer"></div>
+    <button class="act primary" id="nextBtn" style="display:none">つぎの もんだい ➡</button>
+  </div>
+</div>
+
+<div class="reward" id="reward" style="display:none">
+  <div class="rewardcard">
+    <div class="big" id="rEmoji">🏆</div>
+    <h2 id="rTitle">クリア!</h2>
+    <div class="rstars" id="rStars"></div>
+    <div class="rtotal" id="rTotal"></div>
+    <div class="rmsg" id="rMsg"></div>
+    <button id="againBtn">もういちど あそぶ ▶</button>
+  </div>
+</div>
+
+<div class="zukan" id="zukan" style="display:none">
+  <div class="zukancard">
+    <h2>🏅 バッジずかん</h2>
+    <div class="znext" id="znext"></div>
+    <div class="zbar"><div id="zbarFill" style="width:0%"></div></div>
+    <div class="zgrid" id="zgrid"></div>
+    <button class="zclose" id="zClose">とじる</button>
+  </div>
+</div>
+
+<div class="unlock" id="unlock" style="display:none">
+  <div class="unlockcard">
+    <div class="ue" id="uEmoji">🏅</div>
+    <h3>バッジ ゲット!</h3>
+    <div class="un" id="uName"></div>
+    <button id="uClose">やったー!</button>
+  </div>
+</div>
+
+<script>
+(() => {
+const CX=150, CY=150, QUESTIONS=10;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let slow = false;
+const dur = ms => reduce ? ms*0.15 : (slow ? ms*2 : ms);
+
+/* ---------- sound (Web Audio, no files) ---------- */
+let actx=null, muted=false;
+function audio(){
+  if(muted) return null;
+  if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+  if(actx.state==='suspended') actx.resume();
+  return actx;
+}
+function tone(freq, t0, len, type='sine', vol=0.18){
+  const ac=audio(); if(!ac)return;
+  const o=ac.createOscillator(), g=ac.createGain();
+  o.type=type; o.frequency.value=freq;
+  const start=ac.currentTime+t0;
+  g.gain.setValueAtTime(0.0001,start);
+  g.gain.exponentialRampToValueAtTime(vol,start+0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001,start+len);
+  o.connect(g); g.connect(ac.destination);
+  o.start(start); o.stop(start+len+0.05);
+}
+const sTick   = k => tone(520*Math.pow(2,Math.min(k,12)/14), 0, .16, 'triangle', .2);
+const sHour   = () => { tone(660,0,.25,'sine',.22); tone(990,.12,.3,'sine',.18); };
+const sRight  = () => { tone(784,0,.15,'sine',.25); tone(1175,.14,.35,'sine',.25); };
+const sOops   = () => { tone(330,0,.2,'sine',.14); tone(294,.18,.3,'sine',.12); };
+const sPick   = () => tone(600,0,.08,'triangle',.12);
+const sSeg    = k => tone(440*Math.pow(2,k/10), 0, .2, 'triangle', .2);
+const sFanfare= () => { [523,659,784,1047].forEach((f,i)=>tone(f,i*.14,.32,'sine',.22)); tone(1319,.6,.5,'sine',.22); };
+
+/* ---------- helpers ---------- */
+const rad = a => a*Math.PI/180;
+const pt = (a,r) => [CX + r*Math.sin(rad(a)), CY - r*Math.cos(rad(a))];
+const fun = m => (m%10===0) ? 'ぷん' : 'ふん';
+const fmtTime = (h,m) => m===0 ? `${h}じ` : `${h}じ${m}${fun(m)}`;
+function fmtDelta(d){
+  const h=Math.floor(d/60), m=d%60;
+  if(h&&m) return `${h}じかん${m}${fun(m)}`;
+  if(h) return `${h}じかん`;
+  return `${m}${fun(m)}`;
+}
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+const range=(a,b,s=1)=>{const o=[];for(let i=a;i<=b;i+=s)o.push(i);return o;};
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+function tween(ms,fn){return new Promise(res=>{
+  const t0=performance.now();
+  (function step(t){const p=Math.min(1,(t-t0)/ms); fn(p); p<1?requestAnimationFrame(step):res();})(t0);
+});}
+
+/* ---------- clock factory ---------- */
+const NS='http://www.w3.org/2000/svg';
+const el=(n,at)=>{const e=document.createElementNS(NS,n);for(const k in at)e.setAttribute(k,at[k]);return e;};
+
+function makeClock(container, opts){
+  const svg=el('svg',{viewBox:'0 0 300 300'});
+  svg.appendChild(el('circle',{cx:CX,cy:CY,r:120,fill:'#FFFDF7',stroke:opts.frame,'stroke-width':7}));
+  let arc=null;
+  if(opts.withArc){ arc=el('path',{fill:'rgba(255,138,92,.35)',d:''}); svg.appendChild(arc); }
+  for(let i=0;i<60;i++){
+    const a=i*6, big=i%5===0;
+    const [x1,y1]=pt(a, big?104:110), [x2,y2]=pt(a,116);
+    svg.appendChild(el('line',{x1,y1,x2,y2,stroke: big?'#1F3A5F':'#C4D3E3','stroke-width':big?4:2,'stroke-linecap':'round'}));
+  }
+  for(let n=1;n<=12;n++){
+    const [x,y]=pt(n*30, 88);
+    const t=el('text',{x,y:y+8,'text-anchor':'middle','font-size':24,'font-weight':900,fill:'#1F3A5F','font-family':'inherit'});
+    t.textContent=n; svg.appendChild(t);
+  }
+  if(opts.withOuterNums){
+    for(let n=1;n<=12;n++){
+      const [x,y]=pt(n*30, 137);
+      const t=el('text',{x,y:y+4,'text-anchor':'middle','font-size':12,'font-weight':700,fill:'#9DB2C7','font-family':'inherit'});
+      t.textContent=n*5; svg.appendChild(t);
+    }
+  }
+  const hHour=el('line',{x1:CX,y1:CY,x2:CX,y2:CY-55,stroke:'#1F3A5F','stroke-width':11,'stroke-linecap':'round'});
+  const hMin =el('line',{x1:CX,y1:CY,x2:CX,y2:CY-92,stroke:opts.minuteHand,'stroke-width':8,'stroke-linecap':'round'});
+  svg.appendChild(hHour); svg.appendChild(hMin);
+  svg.appendChild(el('circle',{cx:CX,cy:CY,r:8,fill:'#1F3A5F'}));
+  let bubbles=null;
+  if(opts.withBubbles){ bubbles=el('g',{}); svg.appendChild(bubbles); }
+  container.appendChild(svg);
+  return {
+    set(hourAngle,minAngle){
+      hHour.setAttribute('transform',`rotate(${hourAngle} ${CX} ${CY})`);
+      hMin.setAttribute('transform',`rotate(${minAngle} ${CX} ${CY})`);
+    },
+    arc(a0,sweep){
+      if(!arc)return;
+      if(sweep<=0){arc.setAttribute('d','');return;}
+      if(sweep>=360){arc.setAttribute('d',`M${CX-104},${CY} a104,104 0 1,0 208,0 a104,104 0 1,0 -208,0`);return;}
+      const [x1,y1]=pt(a0,104), [x2,y2]=pt(a0+sweep,104);
+      arc.setAttribute('d',`M${CX},${CY} L${x1},${y1} A104,104 0 ${sweep>180?1:0},1 ${x2},${y2} Z`);
+    },
+    bubble(minute,label){
+      if(!bubbles)return;
+      const [x,y]=pt(minute*6, 137);
+      const g=el('g',{opacity:0});
+      g.appendChild(el('circle',{cx:x,cy:y,r:15,fill:'#FF8A5C'}));
+      const t=el('text',{x,y:y+4.5,'text-anchor':'middle','font-size':12,'font-weight':900,fill:'#fff','font-family':'inherit'});
+      t.textContent=label; g.appendChild(t);
+      bubbles.appendChild(g);
+      tween(dur(180),p=>{g.setAttribute('opacity',p);g.setAttribute('transform',`translate(0 ${-4*(1-p)})`);});
+    },
+    clearBubbles(){ if(bubbles)bubbles.replaceChildren(); }
+  };
+}
+
+const clockA = makeClock(document.getElementById('clockA'),
+  {frame:'#3A8DDE', minuteHand:'#3A8DDE', withArc:false, withBubbles:false, withOuterNums:false});
+const clockB = makeClock(document.getElementById('clockB'),
+  {frame:'#FF8A5C', minuteHand:'#FF8A5C', withArc:true, withBubbles:true, withOuterNums:true});
+
+/* ---------- state ---------- */
+let level=1, stars=0, prob=null, busy=false, answered=false;
+let qNum=0, sessionStars=0;
+const $=id=>document.getElementById(id);
+
+/* ---------- badges & save ---------- */
+const BADGES=[
+  {n:10,  e:'🐣', name:'とけいの ひよこ'},
+  {n:25,  e:'⏱️', name:'5ふん めいじん'},
+  {n:50,  e:'🥉', name:'どうメダル'},
+  {n:80,  e:'🥈', name:'ぎんメダル'},
+  {n:120, e:'🥇', name:'きんメダル'},
+  {n:170, e:'💎', name:'ダイヤの とけい'},
+  {n:230, e:'🚀', name:'じかんの たびびと'},
+  {n:300, e:'👑', name:'とけいの おうさま'},
+  {n:400, e:'🌈', name:'にじいろ とけい'},
+  {n:500, e:'🏆', name:'じかんマスター'},
+];
+const unlockedCount = s => BADGES.filter(b=>s>=b.n).length;
+async function saveStars(){
+  try{ if(window.storage) await window.storage.set('tokei-stars', String(stars)); }catch(e){}
+}
+async function loadStars(){
+  try{
+    if(window.storage){
+      const r=await window.storage.get('tokei-stars');
+      if(r && r.value) stars=parseInt(r.value)||0;
+    }
+  }catch(e){}
+  $('stars').textContent=stars;
+}
+function renderZukan(){
+  const grid=$('zgrid'); grid.replaceChildren();
+  BADGES.forEach(b=>{
+    const got=stars>=b.n;
+    const d=document.createElement('div');
+    d.className='badge'+(got?'':' locked');
+    d.innerHTML=`<div class="be">${got?b.e:'❔'}</div><div class="bn">${got?b.name:'? ? ?'}</div><div class="bt">⭐${b.n}</div>`;
+    grid.appendChild(d);
+  });
+  const next=BADGES.find(b=>stars<b.n);
+  if(next){
+    const prev=[...BADGES].reverse().find(b=>stars>=b.n);
+    const base=prev?prev.n:0;
+    $('znext').textContent=`つぎのバッジまで あと⭐${next.n-stars}こ!`;
+    $('zbarFill').style.width=Math.min(100,(stars-base)/(next.n-base)*100)+'%';
+  }else{
+    $('znext').textContent='ぜんぶ あつめた!ほんものの じかんマスターだ!🎉';
+    $('zbarFill').style.width='100%';
+  }
+}
+function openZukan(){ renderZukan(); $('zukan').style.display='flex'; }
+function showUnlock(b){
+  $('uEmoji').textContent=b.e;
+  $('uName').textContent=b.name;
+  $('unlock').style.display='flex';
+  sFanfare();
+  confetti(40);
+}
+function gainStars(gain){
+  const before=unlockedCount(stars);
+  stars+=gain; sessionStars+=gain;
+  $('stars').textContent=stars;
+  saveStars();
+  if(unlockedCount(stars)>before){
+    const b=BADGES[unlockedCount(stars)-1];
+    setTimeout(()=>showUnlock(b), 900);
+  }
+}
+
+/* ---------- session ---------- */
+function buildDots(){
+  const box=$('dots'); box.replaceChildren();
+  for(let i=0;i<QUESTIONS;i++){
+    const d=document.createElement('div'); d.className='dot'; box.appendChild(d);
+  }
+}
+function startSession(){
+  qNum=0; sessionStars=0;
+  buildDots();
+  $('reward').style.display='none';
+  nextQuestion();
+}
+function nextQuestion(){
+  qNum++;
+  $('pcount').textContent=`もんだい ${qNum}/${QUESTIONS}`;
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('now', i===qNum-1));
+  showProblem();
+}
+function markDot(gain){
+  const d=document.querySelectorAll('.dot')[qNum-1];
+  if(!d)return;
+  d.classList.remove('now');
+  d.classList.add(gain>=2?'got2':'got1');
+  d.textContent='⭐';
+}
+function showReward(){
+  const max=QUESTIONS*2;
+  let emoji,title,msg;
+  if(sessionStars>=max){ emoji='🏆'; title='パーフェクト!'; msg='ぜんぶ じぶんの ちからで できたね!すごい!'; }
+  else if(sessionStars>=max*0.7){ emoji='🌟'; title='すごい!クリア!'; msg='たくさん せいかい できたね!'; }
+  else { emoji='💪'; title='さいごまで がんばった!'; msg='かぞえかたが どんどん じょうずに なってるよ!'; }
+  $('rEmoji').textContent=emoji;
+  $('rTitle').textContent=title;
+  $('rStars').textContent=`⭐×${sessionStars} ゲット!`;
+  $('rTotal').textContent=`ぜんぶで ⭐${stars}こ`;
+  $('rMsg').textContent=msg;
+  $('reward').style.display='flex';
+  sFanfare();
+  confetti(60);
+}
+
+/* ---------- problem generation ---------- */
+function makeProblem(){
+  let h=rnd(range(1,12)), m0, delta;
+  if(level===1){
+    m0=rnd(range(0,45,5));
+    delta=rnd(range(5,55-m0,5));
+  }else if(level===2){
+    m0=rnd(range(30,55,5));
+    delta=rnd(range(65-m0, Math.min(55, 115-m0), 5));
+  }else{
+    m0=rnd(range(0,55,5));
+    const k=rnd([1,1,2]);
+    const r=rnd([0,0,5,10,15,20,25,30,35,40,45,50]);
+    delta=k*60+r;
+  }
+  const end=m0+delta;
+  const h2=((h-1+Math.floor(end/60))%12)+1, m2=end%60;
+  return {h,m0,h2,m2,delta};
+}
+function makeChoices(d){
+  const set=new Set([d]);
+  const tries=[d-5,d+5,d-10,d+10,d+15,d-15];
+  for(const t of tries){ if(set.size>=3)break; if(t>0 && t%5===0) set.add(t); }
+  return [...set].sort(()=>Math.random()-.5);
+}
+
+/* ---------- rendering ---------- */
+function showProblem(){
+  prob=makeProblem(); answered=false;
+  clockB.clearBubbles(); clockB.arc(0,0);
+  $('numline').style.display='none';
+  $('numline').replaceChildren();
+  const hA =(prob.h %12)*30+prob.m0*0.5, mA =prob.m0*6;
+  const hA2=(prob.h2%12)*30+prob.m2*0.5, mA2=prob.m2*6;
+  clockA.set(hA,mA);
+  clockB.set(hA2,mA2);
+  $('tStart').textContent=fmtTime(prob.h,prob.m0);
+  $('tEnd').textContent=fmtTime(prob.h2,prob.m2);
+  $('counter').innerHTML='<span class="lbl">じぶんで かんがえて えらんでね 🤔</span>';
+  $('msg').textContent='ボタンを おすと こたえあわせが はじまるよ!';
+  $('msg').className='msg think';
+  $('nextBtn').style.display='none';
+  const box=$('choices'); box.replaceChildren();
+  makeChoices(prob.delta).forEach(v=>{
+    const b=document.createElement('button');
+    b.className='choice'; b.textContent=fmtDelta(v);
+    b.dataset.val=v;
+    b.onclick=()=>pick(b,v);
+    box.appendChild(b);
+  });
+}
+
+function setCounter(html){$('counter').innerHTML=html;}
+function popCounter(txt,lbl){
+  setCounter(`<span class="num pop">${txt}</span><span class="lbl">${lbl||''}</span>`);
+  setTimeout(()=>{const n=$('counter').querySelector('.num'); if(n)n.classList.remove('pop');},dur(160));
+}
+
+/* ---------- number line (時間の数直線) ---------- */
+function numlinePlan(){
+  const {h,m0,delta}=prob;
+  const hours=Math.floor(delta/60), rem=delta%60;
+  const nodes=[{off:0}], segs=[];
+  let off=0;
+  for(let i=1;i<=hours;i++){
+    off+=60; segs.push({min:60,label:'1じかん'}); nodes.push({off});
+  }
+  if(rem>0){
+    const curM=(m0+off)%60;
+    if(curM>0 && curM+rem>60){
+      const b=60-curM;
+      off+=b; segs.push({min:b,label:b+fun(b)}); nodes.push({off});
+      const r2=rem-b;
+      off+=r2; segs.push({min:r2,label:r2+fun(r2)}); nodes.push({off});
+    }else{
+      off+=rem; segs.push({min:rem,label:rem+fun(rem)}); nodes.push({off});
+    }
+  }
+  nodes.forEach(n=>{
+    const tot=m0+n.off;
+    n.h=((h-1+Math.floor(tot/60))%12)+1;
+    n.m=tot%60;
+  });
+  return {nodes,segs};
+}
+
+async function playNumline(){
+  const {nodes,segs}=numlinePlan();
+  const W=340, PAD=30, BASE=74;
+  const H = segs.length>1 ? 140 : 118;
+  const avail=W-2*PAD, minw=58;
+  const extra=Math.max(0, avail - minw*segs.length);
+  const total=prob.delta;
+  const widths=segs.map(s=> segs.length? (minw + (s.min/total)*extra) : avail);
+  const scale=avail/widths.reduce((a,b)=>a+b,0);
+  let x=PAD;
+  const xs=[x];
+  widths.forEach(w=>{ x+=w*scale; xs.push(x); });
+
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});
+  const defs=el('defs',{});
+  const mk=el('marker',{id:'arw',viewBox:'0 0 10 10',refX:8,refY:5,markerWidth:6,markerHeight:6,orient:'auto'});
+  mk.appendChild(el('path',{d:'M0,0 L10,5 L0,10 z',fill:'#F0703F'}));
+  defs.appendChild(mk); svg.appendChild(defs);
+
+  // base line
+  svg.appendChild(el('line',{x1:PAD-8,y1:BASE,x2:W-PAD+8,y2:BASE,stroke:'#C4D3E3','stroke-width':4,'stroke-linecap':'round'}));
+
+  // nodes (hidden except first)
+  const nodeEls=nodes.map((n,i)=>{
+    const g=el('g',{opacity: i===0?1:0});
+    const isHour = n.m===0;
+    const isEnd = i===nodes.length-1;
+    const fill = i===0 ? '#3A8DDE' : isEnd ? '#FF8A5C' : isHour ? '#fff' : '#fff';
+    const strk = i===0 ? '#2E74B8' : isEnd ? '#F0703F' : '#3A8DDE';
+    g.appendChild(el('circle',{cx:xs[i],cy:BASE,r:7,fill,stroke:strk,'stroke-width':3}));
+    const t=el('text',{x:xs[i],y:BASE+22,'text-anchor':'middle','font-size':13,'font-weight':900,fill:'#1F3A5F','font-family':'inherit'});
+    const l1=el('tspan',{x:xs[i]}); l1.textContent=`${n.h}じ`;
+    t.appendChild(l1);
+    if(n.m>0){
+      const l2=el('tspan',{x:xs[i],dy:14}); l2.textContent=`${n.m}${fun(n.m)}`;
+      t.appendChild(l2);
+    }
+    g.appendChild(t);
+    svg.appendChild(g);
+    return g;
+  });
+
+  // segment arcs + labels (hidden)
+  const segEls=segs.map((s,i)=>{
+    const x0=xs[i], x1=xs[i+1], mid=(x0+x1)/2;
+    const arch = el('path',{d:`M${x0},${BASE-10} Q${mid},${BASE-52} ${x1},${BASE-10}`,
+      fill:'none',stroke:'#F0703F','stroke-width':3.5,'marker-end':'url(#arw)'});
+    const lab=el('text',{x:mid,y:BASE-44,'text-anchor':'middle','font-size':15,'font-weight':900,fill:'#F0703F','font-family':'inherit',opacity:0});
+    lab.textContent=s.label;
+    svg.appendChild(arch); svg.appendChild(lab);
+    const len=arch.getTotalLength ? null : null;
+    return {arch,lab};
+  });
+
+  // equation (shown at end if 2+ segments)
+  let eqEl=null;
+  if(segs.length>1){
+    eqEl=el('text',{x:W/2,y:H-6,'text-anchor':'middle','font-size':15,'font-weight':900,fill:'#F0703F','font-family':'inherit',opacity:0});
+    eqEl.textContent = segs.every(s=>s.min<60)
+      ? segs.map(s=>s.min).join(' + ') + ' = ' + prob.delta + fun(prob.delta)
+      : segs.map(s=>s.label).join(' + ') + ' = ' + fmtDelta(prob.delta);
+    svg.appendChild(eqEl);
+  }
+
+  const wrap=$('numline');
+  wrap.replaceChildren(svg);
+  wrap.style.display='block';
+
+  // prepare arcs for draw animation
+  segEls.forEach(({arch})=>{
+    const L=arch.getTotalLength();
+    arch.style.strokeDasharray=L;
+    arch.style.strokeDashoffset=L;
+  });
+
+  await sleep(dur(350));
+  for(let i=0;i<segEls.length;i++){
+    const {arch,lab}=segEls[i];
+    const L=arch.getTotalLength();
+    sSeg(i);
+    await tween(dur(480),p=>{ arch.style.strokeDashoffset=L*(1-p); });
+    lab.setAttribute('opacity',1);
+    nodeEls[i+1].setAttribute('opacity',1);
+    popCounter(segs[i].label, i<segEls.length-1 ? 'つぎは?' : '');
+    await sleep(dur(420));
+  }
+  if(eqEl){
+    await tween(dur(300),p=>eqEl.setAttribute('opacity',p));
+    await sleep(dur(300));
+  }
+}
+
+/* ---------- 答え合わせ: clock counting → number line → reveal ---------- */
+async function checkAnswer(chosenVal){
+  busy=true;
+  clockB.clearBubbles(); clockB.arc(0,0);
+
+  const {h,m0,delta}=prob;
+  const hours=Math.floor(delta/60), rem=delta%60;
+  let hA=(h%12)*30+m0*0.5, mA=m0*6;
+  clockB.set(hA,mA);
+  $('msg').textContent='こたえあわせ! まず とけいで かぞえよう👇';
+  $('msg').className='msg think';
+  popCounter('スタート!','ひだりと おなじだよ');
+  await sleep(dur(750));
+
+  for(let i=1;i<=hours;i++){
+    const hA0=hA, mA0=mA;
+    await tween(dur(1100),p=>{
+      const e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+      clockB.set(hA0+30*e, mA0+360*e);
+      clockB.arc(mA0%360, 360*e);
+    });
+    hA+=30; mA+=360;
+    sHour();
+    popCounter(`${i}じかん`,'たった!');
+    clockB.arc(0,360);
+    await sleep(dur(650));
+    if(i<hours||rem>0){ clockB.arc(mA%360,0); }
+  }
+
+  const startA=mA%360;
+  for(let k=1;k<=rem/5;k++){
+    const a0=mA, hA0=hA;
+    await tween(dur(420),p=>{
+      const e=1-Math.pow(1-p,3);
+      clockB.set(hA0+2.5*e, a0+30*e);
+      clockB.arc(startA, 30*(k-1)+30*e);
+    });
+    mA+=30; hA+=2.5;
+    sTick(k);
+    clockB.bubble((m0+k*5)%60, k*5);
+    popCounter(hours? `${hours}じかん${k*5}${fun(k*5)}` : `${k*5}${fun(k*5)}`,'');
+    await sleep(dur(380));
+  }
+
+  // ---- number line phase ----
+  await sleep(dur(350));
+  $('msg').textContent='すうちょくせんでも みてみよう!📏';
+  await playNumline();
+
+  setCounter(`<span class="answerBig">こたえ: ${fmtDelta(delta)}</span>`);
+
+  // ---- reveal ----
+  const buttons=[...document.querySelectorAll('.choice')];
+  const correctBtn=buttons.find(b=>+b.dataset.val===delta);
+  const pickedBtn =buttons.find(b=>+b.dataset.val===chosenVal);
+  correctBtn.classList.add('right');
+
+  let gain;
+  if(chosenVal===delta){
+    gain=2;
+    sRight();
+    $('msg').textContent='せいかい! じぶんで かんがえられたね! ⭐+2';
+    $('msg').className='msg good';
+    confetti(28);
+  }else{
+    gain=1;
+    pickedBtn.classList.add('wrong');
+    sOops();
+    $('msg').textContent=`こたえは「${fmtDelta(delta)}」だったね。さいごまで かぞえられたから ⭐+1!`;
+    $('msg').className='msg oops';
+  }
+  gainStars(gain);
+  markDot(gain);
+
+  $('nextBtn').textContent = qNum>=QUESTIONS ? '🎉 けっかを みる!' : 'つぎの もんだい ➡';
+  $('nextBtn').style.display='';
+  busy=false;
+}
+
+/* ---------- answering ---------- */
+function pick(btn,val){
+  if(busy||answered)return;
+  answered=true;
+  audio();
+  sPick();
+  btn.classList.add('picked');
+  document.querySelectorAll('.choice').forEach(b=>b.disabled=true);
+  checkAnswer(val);
+}
+
+/* ---------- confetti ---------- */
+function confetti(n){
+  const colors=['#FF8A5C','#3A8DDE','#FFC53D','#34C48E','#B48CF2'];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=rnd(colors);
+    c.style.animationDuration=(1.4+Math.random()*1.2)+'s';
+    c.style.animationDelay=(Math.random()*.4)+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),3400);
+  }
+}
+
+/* ---------- wiring ---------- */
+document.querySelectorAll('.lv').forEach(b=>b.onclick=()=>{
+  if(busy)return;
+  document.querySelectorAll('.lv').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); level=+b.dataset.lv;
+  startSession();
+});
+$('nextBtn').onclick=()=>{
+  if(busy)return;
+  if(qNum>=QUESTIONS){ showReward(); }
+  else{ nextQuestion(); }
+};
+$('againBtn').onclick=startSession;
+$('slowBtn').onclick=()=>{ slow=!slow; $('slowBtn').classList.toggle('on',slow); };
+$('soundBtn').onclick=()=>{
+  muted=!muted;
+  $('soundBtn').textContent = muted ? '🔇' : '🔊';
+  $('soundBtn').classList.toggle('on', muted);
+  if(!muted){ audio(); sPick(); }
+};
+
+$('starsPill').onclick=openZukan;
+$('zClose').onclick=()=>{ $('zukan').style.display='none'; };
+$('zukan').onclick=e=>{ if(e.target.id==='zukan') $('zukan').style.display='none'; };
+$('uClose').onclick=()=>{ $('unlock').style.display='none'; };
+
+loadStars().finally(startSession);
+})();
+</script>
+</body>
+</html>
