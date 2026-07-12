@@ -4,249 +4,288 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>まなびランド</title>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+
 :root{
-  --bg:#EAF6FF; --card:#FFFFFF; --ink:#1F3A5F; --blue:#3A8DDE; --blue-d:#2E74B8;
-  --coral:#FF8A5C; --coral-d:#F0703F; --mint:#34C48E; --sun:#FFC53D; --gray:#9DB2C7;
-  --sky1:#7EC8F0; --sky2:#C2E8FF; --grass:#70C045; --grass2:#58A832;
+  --sky:    #5BB3F0;
+  --sky-d:  #3A8DDE;
+  --sky-l:  #D6EFFF;
+  --sky-bg: #F0F8FF;
+  --yellow: #FFD43B;
+  --yellow-d:#C99A00;
+  --white:  #FFFFFF;
+  --ink:    #1A3255;
+  --ink-s:  #6080A0;
 }
-*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;}
 
-/* ===== 世界背景 ===== */
+html,body{min-height:100%;}
 body{
-  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','BIZ UDPGothic','Yu Gothic',sans-serif;
-  color:var(--ink); font-weight:700;
-  min-height:100vh;
-  background:linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 45%, #DFF4FF 60%, #EAF6FF 72%);
-  overflow-x:hidden;
-  display:flex; justify-content:center;
+  font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+  font-size:18px;
+  line-height:1.7;
+  font-weight:400;
+  color:var(--ink);
+  background:var(--sky-bg);
 }
-
-/* ===== 雲 ===== */
-.sky-layer{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-.cloud{
-  position:absolute;
-  background:rgba(255,255,255,.88);
-  border-radius:999px;
-}
-.cloud::before,.cloud::after{
-  content:'';position:absolute;
-  background:rgba(255,255,255,.92);border-radius:50%;
-}
-.cloud::before{width:55%;height:180%;top:-55%;left:13%;}
-.cloud::after {width:42%;height:155%;top:-38%;right:13%;}
-.c1{width:130px;height:42px;top:4%;animation:driftR 58s linear infinite;}
-.c2{width:88px; height:30px;top:11%;animation:driftL 43s linear infinite;}
-.c3{width:108px;height:36px;top:19%;animation:driftR 72s linear infinite 18s;}
-.c4{width:70px; height:24px;top:7%; animation:driftL 55s linear infinite 8s;}
-@keyframes driftR{from{transform:translateX(-220px);}to{transform:translateX(calc(100vw + 220px));}}
-@keyframes driftL{from{transform:translateX(calc(100vw + 220px));}to{transform:translateX(-220px);}}
-
-/* ===== 太陽 ===== */
-.sun-deco{
-  position:fixed;top:14px;right:18px;
-  width:60px;height:60px;border-radius:50%;
-  background:radial-gradient(circle at 38% 38%, #FFE566, #FFB030);
-  box-shadow:0 0 0 8px rgba(255,200,50,.18), 0 0 32px rgba(255,180,0,.25);
-  z-index:1;pointer-events:none;
-  animation:sunpulse 5s ease-in-out infinite;
-}
-@keyframes sunpulse{0%,100%{box-shadow:0 0 0 8px rgba(255,200,50,.18),0 0 32px rgba(255,180,0,.25);}
-  50%{box-shadow:0 0 0 14px rgba(255,200,50,.14),0 0 50px rgba(255,180,0,.20);}}
-
-/* ===== 草原 ===== */
-.hills-deco{
-  position:fixed;bottom:0;left:0;right:0;height:72px;
-  pointer-events:none;z-index:0;
-}
-.hills-deco::before{
-  content:'';position:absolute;inset:0;
-  background:var(--grass);
-  border-radius:55% 55% 0 0 / 72px 72px 0 0;
-}
-.hills-deco::after{
-  content:'';position:absolute;
-  bottom:0;right:-5%;width:55%;height:54px;
-  background:var(--grass2);
-  border-radius:50% 50% 0 0 / 54px 54px 0 0;
-}
-.hill-left{
-  position:fixed;bottom:0;left:-5%;width:50%;height:62px;
-  background:#80C84E;
-  border-radius:50% 50% 0 0 / 62px 62px 0 0;
-  pointer-events:none;z-index:0;
-}
-
-/* ===== コンテンツ ===== */
-.app{width:100%;max-width:480px;padding:20px 16px 110px;position:relative;z-index:2;}
 
 /* ===== ヒーロー ===== */
-.hero{text-align:center;padding:12px 0 24px;}
-.logo-wrap{
+.hero{
+  background:linear-gradient(175deg, var(--sky) 0%, #8CCEF5 100%);
+  text-align:center;
+  padding:52px 20px 68px;
+  position:relative;
+  overflow:hidden;
+}
+/* 雲（CSS のみ） */
+.hero::before,.hero::after{
+  content:'';position:absolute;
+  background:rgba(255,255,255,.45);
+  border-radius:999px;
+  pointer-events:none;
+}
+.hero::before{width:160px;height:48px;top:18%;left:-24px;}
+.hero::after {width:110px;height:36px;top:42%;right:-16px;}
+
+.hero-badge{
   display:inline-flex;align-items:center;justify-content:center;
-  width:88px;height:88px;border-radius:50%;
-  background:linear-gradient(135deg,#FFD54F,#FF8A65);
-  box-shadow:0 8px 0 rgba(200,100,0,.25), 0 16px 40px rgba(200,100,0,.12);
-  font-size:50px;line-height:1;
-  animation:heroBounce 3.5s ease-in-out infinite;
+  width:72px;height:72px;border-radius:20px;
+  background:var(--yellow);
+  box-shadow:0 6px 0 var(--yellow-d);
+  margin-bottom:18px;
 }
-@keyframes heroBounce{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-8px) rotate(3deg);}}
-h1{
-  font-size:32px;font-weight:900;margin:12px 0 4px;letter-spacing:3px;
-  background:linear-gradient(135deg,#1F3A5F 0%,#2E74B8 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  filter:drop-shadow(0 2px 0 rgba(255,255,255,.8));
+
+.hero h1{
+  font-size:32px;
+  font-weight:900;
+  color:var(--white);
+  letter-spacing:4px;
+  line-height:1.2;
+  margin-bottom:6px;
 }
-.hero-sub{font-size:15px;color:#4A7BB5;margin:0;}
+.hero p{
+  font-size:15px;
+  font-weight:400;
+  color:rgba(255,255,255,.88);
+}
+
+/* ===== メインコンテンツ ===== */
+.content{
+  max-width:520px;
+  margin:0 auto;
+  padding:80px 16px 64px;
+}
 
 /* ===== セクションヘッダー ===== */
-.grid{display:flex;flex-direction:column;gap:12px;}
-.sec-header{display:flex;align-items:center;gap:10px;margin:16px 0 4px;}
-.sec-header::before,.sec-header::after{content:'';flex:1;height:2px;border-radius:2px;background:var(--sh-color,#E3EDF7);opacity:.6;}
-.sec-pill{
-  display:inline-flex;align-items:center;gap:5px;
-  font-size:13px;font-weight:900;color:#fff;
-  background:var(--sh-color,#9DB2C7);border-radius:99px;
-  padding:5px 16px;white-space:nowrap;
-  box-shadow:0 4px 0 rgba(0,0,0,.12);
+.sec-wrap{ margin-bottom:40px; }
+.sec-wrap + .sec-wrap{ margin-top:0; }
+.sec-head{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:14px;
+}
+.sec-line{flex:1;height:1.5px;background:var(--sky-l);border-radius:2px;}
+.sec-label{
+  font-size:12px;font-weight:700;
+  color:var(--sky-d);
+  background:var(--sky-l);
+  border-radius:99px;
+  padding:4px 14px;
+  white-space:nowrap;
+  letter-spacing:.5px;
 }
 
-/* ===== カード ===== */
+/* ===== カードリスト ===== */
+.cards{display:flex;flex-direction:column;gap:12px;}
+
 a.card{
-  display:flex;align-items:center;gap:16px;
-  text-decoration:none;color:var(--ink);
-  background:#fff;border-radius:28px;padding:18px 18px;
-  box-shadow:0 8px 0 rgba(31,58,95,.13), 0 2px 20px rgba(31,58,95,.07);
-  transition:transform .12s,box-shadow .12s;
-  position:relative;overflow:hidden;
-  border:none;
+  display:flex;align-items:center;gap:18px;
+  background:var(--white);
+  border-radius:20px;          /* card border-radius: 20px */
+  padding:28px;                /* card padding: 28px */
+  text-decoration:none;
+  color:var(--ink);
+  box-shadow:0 2px 12px rgba(30,80,160,.07), 0 1px 0 rgba(30,80,160,.04);
+  transition:transform .12s, box-shadow .12s;
+  position:relative;
+  overflow:hidden;
 }
-/* 上のアクセントバー */
+a.card:active{
+  transform:translateY(3px);
+  box-shadow:0 0 4px rgba(30,80,160,.06);
+}
+/* 左の空色アクセントライン */
 a.card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:5px;
-  background:var(--accent,#3A8DDE);border-radius:28px 28px 0 0;
-}
-/* シャインエフェクト */
-a.card::after{
   content:'';position:absolute;
-  top:-40%;left:-60px;width:50px;height:180%;
-  background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
-  transform:skewX(-18deg);transition:left .5s ease;
+  left:0;top:0;bottom:0;width:4px;
+  background:var(--sky);
+  border-radius:20px 0 0 20px;
 }
-a.card:hover::after{left:120%;}
-a.card:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(31,58,95,.13),0 1px 8px rgba(31,58,95,.06);}
+a.card.soon::before{background:var(--sky-l);}
 
-.icon{
-  flex:0 0 68px;height:68px;border-radius:22px;font-size:38px;
+.card-icon{
+  flex:0 0 48px;height:48px;
+  border-radius:14px;
+  background:var(--sky-l);
+  color:var(--sky-d);
   display:flex;align-items:center;justify-content:center;
-  background:var(--accent-bg,#E5F1FC);
-  box-shadow:0 4px 0 rgba(0,0,0,.10);
+  flex-shrink:0;
 }
-.info{flex:1;min-width:0;}
-.info .subject{
-  display:inline-block;font-size:11px;font-weight:900;color:#fff;
-  background:var(--accent,#3A8DDE);border-radius:99px;padding:3px 10px;margin-bottom:4px;
+.card-icon svg{width:26px;height:26px;}
+
+.card-body{flex:1;min-width:0;}
+.card-sub{
+  font-size:11px;font-weight:700;
+  color:var(--sky-d);
+  letter-spacing:.8px;
+  margin-bottom:2px;
 }
-.info h2{font-size:19px;font-weight:900;margin:0 0 3px;line-height:1.25;}
-.info p{font-size:12px;color:var(--gray);margin:0;line-height:1.4;}
-.go{
-  flex:0 0 auto;width:34px;height:34px;border-radius:50%;
-  background:var(--accent-bg);display:flex;align-items:center;justify-content:center;
-  font-size:16px;color:var(--accent);font-weight:900;
-  box-shadow:0 3px 0 rgba(0,0,0,.10);
+.card-title{
+  font-size:18px;font-weight:700;
+  line-height:1.3;
+  margin:0 0 4px;
 }
+.card-desc{
+  font-size:13px;font-weight:400;
+  color:var(--ink-s);
+  line-height:1.5;
+  margin:0;
+}
+
+.card-arrow{
+  flex:0 0 30px;height:30px;
+  border-radius:50%;
+  background:var(--yellow);
+  box-shadow:0 3px 0 var(--yellow-d);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.card-arrow svg{width:12px;height:12px;color:#7A5200;}
 
 /* coming soon */
-.card.soon{opacity:.5;pointer-events:none;}
-.card.soon::before{background:#C4D3E3;}
-.card.soon .icon{background:#EDF3F9;}
-.card.soon .subject{background:var(--gray);}
-.card.soon .go{background:#EDF3F9;color:var(--gray);}
+a.card.soon{opacity:.45;pointer-events:none;}
+a.card.soon .card-arrow{background:var(--sky-l);box-shadow:0 3px 0 #B0CDE8;}
 
-.footer{text-align:center;margin-top:20px;font-size:13px;color:#4A7BB5;font-weight:700;}
+.footer{
+  text-align:center;
+  font-size:13px;font-weight:400;
+  color:var(--ink-s);
+  margin-top:16px;
+}
 </style>
 </head>
 <body>
 
-<!-- 背景装飾 -->
-<div class="sky-layer" aria-hidden="true">
-  <div class="cloud c1"></div>
-  <div class="cloud c2"></div>
-  <div class="cloud c3"></div>
-  <div class="cloud c4"></div>
-</div>
-<div class="sun-deco" aria-hidden="true"></div>
-<div class="hills-deco" aria-hidden="true"></div>
-<div class="hill-left" aria-hidden="true"></div>
-
-<div class="app">
-  <div class="hero">
-    <div class="logo-wrap">🌈</div>
-    <h1>まなびランド</h1>
-    <p class="hero-sub">やりたいのを えらんでね!</p>
+<header class="hero">
+  <div class="hero-badge">
+    <!-- 星アイコン -->
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none"
+         stroke="#7A5200" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="18 3 22 13 33 13 24 20 27 31 18 25 9 31 12 20 3 13 14 13"/>
+    </svg>
   </div>
+  <h1>まなびランド</h1>
+  <p>やりたいのを えらんでね！</p>
+</header>
 
-  <div class="grid" id="grid"></div>
-
-  <div class="footer">きょうも 1つ がんばろう ⭐</div>
-</div>
+<main class="content" id="root"></main>
 
 <script>
-const APPS = [
-  { sec:'math', emoji:'⏰', subject:'さんすう', title:'とけいで かぞえよう!',
-    desc:'はりを うごかして「どれだけ たった?」を マスター', file:'tokei-kazoeyou.html', color:'coral' },
-  { sec:'math', emoji:'⚡', subject:'さんすう', title:'あと なんぷんで ちょうど?',
-    desc:'はやおしで「ちょうどまで あといくつ」を きたえる!', file:'hayaoshi.html', color:'purple' },
-  { sec:'math', emoji:'📏', subject:'さんすう', title:'ながさの もんだい',
-    desc:'mm・cm・m の かんかくを みにつけよう!', file:'nagasa.html', color:'mint' },
-  { sec:'lang', emoji:'🔍', subject:'こくご', title:'ことばさがし',
-    desc:'かくれた ことばを みつけよう!', file:'kotoba.html', color:'sun' },
-  { sec:'lang', emoji:'❔', subject:'じゅんびちゅう', title:'つぎの アプリ',
-    desc:'おたのしみに!', file:'', color:'blue' },
+/* ---- SVG アイコン（統一ストロークスタイル） ---- */
+const ICO = {
+  clock:`<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="14" cy="14" r="11"/>
+    <polyline points="14 7 14 14 18 17"/>
+  </svg>`,
+
+  bolt:`<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="16 2 6 16 14 16 12 26 22 12 14 12"/>
+  </svg>`,
+
+  ruler:`<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="9" width="24" height="10" rx="2.5"/>
+    <line x1="7"  y1="9" x2="7"  y2="14"/>
+    <line x1="12" y1="9" x2="12" y2="12"/>
+    <line x1="17" y1="9" x2="17" y2="14"/>
+    <line x1="22" y1="9" x2="22" y2="12"/>
+  </svg>`,
+
+  search:`<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="8.5"/>
+    <line x1="18.5" y1="18.5" x2="26" y2="26"/>
+  </svg>`,
+
+  dots:`<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+    <circle cx="7"  cy="14" r="2"/>
+    <circle cx="14" cy="14" r="2"/>
+    <circle cx="21" cy="14" r="2"/>
+  </svg>`,
+
+  arrow:`<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="3 2 9 6 3 10"/>
+  </svg>`,
+};
+
+/* ---- データ ---- */
+const CONTENT = [
+  {
+    key:'math', label:'さんすう',
+    apps:[
+      { icon:'clock',  sub:'さんすう', title:'とけいで かぞえよう！',
+        desc:'はりを うごかして「どれだけ たった?」を マスター', file:'tokei-kazoeyou.html' },
+      { icon:'bolt',   sub:'さんすう', title:'あと なんぷんで ちょうど？',
+        desc:'はやおしで「ちょうどまで あといくつ」を きたえる！', file:'hayaoshi.html' },
+      { icon:'ruler',  sub:'さんすう', title:'ながさの もんだい',
+        desc:'mm・cm・m の かんかくを みにつけよう！', file:'nagasa.html' },
+    ],
+  },
+  {
+    key:'lang', label:'こくご',
+    apps:[
+      { icon:'search', sub:'こくご', title:'ことばさがし',
+        desc:'かくれた ことばを みつけよう！', file:'kotoba.html' },
+      { icon:'dots',   sub:'じゅんびちゅう', title:'つぎの アプリ',
+        desc:'おたのしみに！', file:'' },
+    ],
+  },
 ];
 
-const COLORS={
-  blue:  ['#3A8DDE','#E5F1FC'],
-  coral: ['#FF8A5C','#FFEDE4'],
-  mint:  ['#34C48E','#E2F7EE'],
-  sun:   ['#E8A912','#FFF3D6'],
-  purple:['#9B7BE8','#F0EAFC'],
-};
-const SEC_LABELS={
-  math:{label:'さんすう ➕',color:'#FF8A5C'},
-  lang:{label:'こくご 📖',  color:'#34C48E'},
-};
+/* ---- レンダリング ---- */
+const root = document.getElementById('root');
 
-const grid=document.getElementById('grid');
-let lastSec=null;
-APPS.forEach(app=>{
-  if(app.sec&&app.sec!==lastSec){
-    lastSec=app.sec;
-    const info=SEC_LABELS[app.sec]||{};
-    const sh=document.createElement('div');
-    sh.className='sec-header';
-    sh.style.setProperty('--sh-color',info.color||'#9DB2C7');
-    sh.innerHTML=`<span class="sec-pill">${info.label||app.sec}</span>`;
-    grid.appendChild(sh);
-  }
-  const [c,cbg]=COLORS[app.color]||COLORS.blue;
-  const a=document.createElement('a');
-  a.className='card'+(app.file?'':' soon');
-  a.href=app.file||'#';
-  a.style.setProperty('--accent',c);
-  a.style.setProperty('--accent-bg',cbg);
-  a.innerHTML=`
-    <div class="icon">${app.emoji}</div>
-    <div class="info">
-      <span class="subject">${app.subject}</span>
-      <h2>${app.title}</h2>
-      <p>${app.desc}</p>
+CONTENT.forEach(sec => {
+  const wrap = document.createElement('div');
+  wrap.className = 'sec-wrap';
+
+  wrap.innerHTML = `
+    <div class="sec-head">
+      <div class="sec-line"></div>
+      <span class="sec-label">${sec.label}</span>
+      <div class="sec-line"></div>
     </div>
-    <div class="go">▶</div>`;
-  grid.appendChild(a);
+    <div class="cards" id="cards-${sec.key}"></div>
+  `;
+  root.appendChild(wrap);
+
+  const cardsEl = wrap.querySelector('.cards');
+  sec.apps.forEach(app => {
+    const a = document.createElement('a');
+    a.className = 'card' + (app.file ? '' : ' soon');
+    a.href = app.file || '#';
+    a.innerHTML = `
+      <div class="card-icon">${ICO[app.icon] || ''}</div>
+      <div class="card-body">
+        <div class="card-sub">${app.sub}</div>
+        <h2 class="card-title">${app.title}</h2>
+        <p class="card-desc">${app.desc}</p>
+      </div>
+      <div class="card-arrow">${ICO.arrow}</div>
+    `;
+    cardsEl.appendChild(a);
+  });
 });
+
+root.insertAdjacentHTML('beforeend', '<p class="footer">きょうも 1つ がんばろう ✦</p>');
 </script>
 </body>
 </html>
