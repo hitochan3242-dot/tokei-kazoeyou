@@ -9,67 +9,183 @@
 :root{
   --bg:#EAF6FF; --card:#FFFFFF; --ink:#1F3A5F; --blue:#3A8DDE; --blue-d:#2E74B8;
   --coral:#FF8A5C; --coral-d:#F0703F; --mint:#34C48E; --sun:#FFC53D; --gray:#9DB2C7;
+  --sky1:#7EC8F0; --sky2:#C2E8FF; --grass:#70C045; --grass2:#58A832;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-html,body{margin:0; padding:0;}
+html,body{margin:0;padding:0;}
+
+/* ===== 世界背景 ===== */
 body{
-  background:var(--bg);
   font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','BIZ UDPGothic','Yu Gothic',sans-serif;
   color:var(--ink); font-weight:700;
-  min-height:100vh; display:flex; justify-content:center;
+  min-height:100vh;
+  background:linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 45%, #DFF4FF 60%, #EAF6FF 72%);
+  overflow-x:hidden;
+  display:flex; justify-content:center;
 }
-.app{width:100%; max-width:480px; padding:20px 16px 40px;}
 
-/* ---------- hero ---------- */
-.hero{text-align:center; margin-bottom:20px;}
-.hero .sun{font-size:52px; line-height:1;}
-h1{font-size:28px; font-weight:900; margin:6px 0 4px; letter-spacing:2px;}
-.hero p{margin:0; font-size:14px; color:var(--blue-d);}
+/* ===== 雲 ===== */
+.sky-layer{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.cloud{
+  position:absolute;
+  background:rgba(255,255,255,.88);
+  border-radius:999px;
+}
+.cloud::before,.cloud::after{
+  content:'';position:absolute;
+  background:rgba(255,255,255,.92);border-radius:50%;
+}
+.cloud::before{width:55%;height:180%;top:-55%;left:13%;}
+.cloud::after {width:42%;height:155%;top:-38%;right:13%;}
+.c1{width:130px;height:42px;top:4%;animation:driftR 58s linear infinite;}
+.c2{width:88px; height:30px;top:11%;animation:driftL 43s linear infinite;}
+.c3{width:108px;height:36px;top:19%;animation:driftR 72s linear infinite 18s;}
+.c4{width:70px; height:24px;top:7%; animation:driftL 55s linear infinite 8s;}
+@keyframes driftR{from{transform:translateX(-220px);}to{transform:translateX(calc(100vw + 220px));}}
+@keyframes driftL{from{transform:translateX(calc(100vw + 220px));}to{transform:translateX(-220px);}}
 
-/* ---------- app cards ---------- */
-.grid{display:flex; flex-direction:column; gap:14px;}
+/* ===== 太陽 ===== */
+.sun-deco{
+  position:fixed;top:14px;right:18px;
+  width:60px;height:60px;border-radius:50%;
+  background:radial-gradient(circle at 38% 38%, #FFE566, #FFB030);
+  box-shadow:0 0 0 8px rgba(255,200,50,.18), 0 0 32px rgba(255,180,0,.25);
+  z-index:1;pointer-events:none;
+  animation:sunpulse 5s ease-in-out infinite;
+}
+@keyframes sunpulse{0%,100%{box-shadow:0 0 0 8px rgba(255,200,50,.18),0 0 32px rgba(255,180,0,.25);}
+  50%{box-shadow:0 0 0 14px rgba(255,200,50,.14),0 0 50px rgba(255,180,0,.20);}}
+
+/* ===== 草原 ===== */
+.hills-deco{
+  position:fixed;bottom:0;left:0;right:0;height:72px;
+  pointer-events:none;z-index:0;
+}
+.hills-deco::before{
+  content:'';position:absolute;inset:0;
+  background:var(--grass);
+  border-radius:55% 55% 0 0 / 72px 72px 0 0;
+}
+.hills-deco::after{
+  content:'';position:absolute;
+  bottom:0;right:-5%;width:55%;height:54px;
+  background:var(--grass2);
+  border-radius:50% 50% 0 0 / 54px 54px 0 0;
+}
+.hill-left{
+  position:fixed;bottom:0;left:-5%;width:50%;height:62px;
+  background:#80C84E;
+  border-radius:50% 50% 0 0 / 62px 62px 0 0;
+  pointer-events:none;z-index:0;
+}
+
+/* ===== コンテンツ ===== */
+.app{width:100%;max-width:480px;padding:20px 16px 110px;position:relative;z-index:2;}
+
+/* ===== ヒーロー ===== */
+.hero{text-align:center;padding:12px 0 24px;}
+.logo-wrap{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:88px;height:88px;border-radius:50%;
+  background:linear-gradient(135deg,#FFD54F,#FF8A65);
+  box-shadow:0 8px 0 rgba(200,100,0,.25), 0 16px 40px rgba(200,100,0,.12);
+  font-size:50px;line-height:1;
+  animation:heroBounce 3.5s ease-in-out infinite;
+}
+@keyframes heroBounce{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-8px) rotate(3deg);}}
+h1{
+  font-size:32px;font-weight:900;margin:12px 0 4px;letter-spacing:3px;
+  background:linear-gradient(135deg,#1F3A5F 0%,#2E74B8 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 2px 0 rgba(255,255,255,.8));
+}
+.hero-sub{font-size:15px;color:#4A7BB5;margin:0;}
+
+/* ===== セクションヘッダー ===== */
+.grid{display:flex;flex-direction:column;gap:12px;}
+.sec-header{display:flex;align-items:center;gap:10px;margin:16px 0 4px;}
+.sec-header::before,.sec-header::after{content:'';flex:1;height:2px;border-radius:2px;background:var(--sh-color,#E3EDF7);opacity:.6;}
+.sec-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:13px;font-weight:900;color:#fff;
+  background:var(--sh-color,#9DB2C7);border-radius:99px;
+  padding:5px 16px;white-space:nowrap;
+  box-shadow:0 4px 0 rgba(0,0,0,.12);
+}
+
+/* ===== カード ===== */
 a.card{
-  display:flex; align-items:center; gap:14px; text-decoration:none; color:var(--ink);
-  background:var(--card); border-radius:22px; padding:16px 16px;
-  box-shadow:0 4px 0 rgba(31,58,95,.12);
-  transition:transform .1s;
-  border-left:8px solid var(--accent,#3A8DDE);
+  display:flex;align-items:center;gap:16px;
+  text-decoration:none;color:var(--ink);
+  background:#fff;border-radius:28px;padding:18px 18px;
+  box-shadow:0 8px 0 rgba(31,58,95,.13), 0 2px 20px rgba(31,58,95,.07);
+  transition:transform .12s,box-shadow .12s;
+  position:relative;overflow:hidden;
+  border:none;
 }
-a.card:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(31,58,95,.12);}
+/* 上のアクセントバー */
+a.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:5px;
+  background:var(--accent,#3A8DDE);border-radius:28px 28px 0 0;
+}
+/* シャインエフェクト */
+a.card::after{
+  content:'';position:absolute;
+  top:-40%;left:-60px;width:50px;height:180%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
+  transform:skewX(-18deg);transition:left .5s ease;
+}
+a.card:hover::after{left:120%;}
+a.card:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(31,58,95,.13),0 1px 8px rgba(31,58,95,.06);}
+
 .icon{
-  flex:0 0 62px; height:62px; border-radius:18px; font-size:34px;
-  display:flex; align-items:center; justify-content:center;
+  flex:0 0 68px;height:68px;border-radius:22px;font-size:38px;
+  display:flex;align-items:center;justify-content:center;
   background:var(--accent-bg,#E5F1FC);
+  box-shadow:0 4px 0 rgba(0,0,0,.10);
 }
-.info{flex:1; min-width:0;}
-.info .subject{display:inline-block; font-size:10px; font-weight:900; color:#fff;
-  background:var(--accent,#3A8DDE); border-radius:99px; padding:2px 9px; margin-bottom:3px;}
-.info h2{font-size:18px; font-weight:900; margin:0 0 2px; line-height:1.25;}
-.info p{font-size:12px; color:var(--gray); margin:0; line-height:1.4;}
-.go{flex:0 0 auto; font-size:20px; color:var(--accent,#3A8DDE); font-weight:900;}
+.info{flex:1;min-width:0;}
+.info .subject{
+  display:inline-block;font-size:11px;font-weight:900;color:#fff;
+  background:var(--accent,#3A8DDE);border-radius:99px;padding:3px 10px;margin-bottom:4px;
+}
+.info h2{font-size:19px;font-weight:900;margin:0 0 3px;line-height:1.25;}
+.info p{font-size:12px;color:var(--gray);margin:0;line-height:1.4;}
+.go{
+  flex:0 0 auto;width:34px;height:34px;border-radius:50%;
+  background:var(--accent-bg);display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:var(--accent);font-weight:900;
+  box-shadow:0 3px 0 rgba(0,0,0,.10);
+}
 
 /* coming soon */
-.card.soon{opacity:.55; pointer-events:none; border-left-color:#C4D3E3;}
+.card.soon{opacity:.5;pointer-events:none;}
+.card.soon::before{background:#C4D3E3;}
 .card.soon .icon{background:#EDF3F9;}
 .card.soon .subject{background:var(--gray);}
-.card.soon .go{visibility:hidden;}
+.card.soon .go{background:#EDF3F9;color:var(--gray);}
 
-/* section headers */
-.sec-header{display:flex; align-items:center; gap:8px; margin:14px 0 4px;}
-.sec-header::before,.sec-header::after{content:''; flex:1; height:2px; border-radius:2px; background:var(--sh-color,#E3EDF7);}
-.sec-pill{display:inline-flex; align-items:center; gap:4px; font-size:13px; font-weight:900;
-  color:#fff; background:var(--sh-color,#9DB2C7); border-radius:99px; padding:4px 14px;
-  white-space:nowrap; box-shadow:0 2px 0 rgba(31,58,95,.15);}
-
-.footer{text-align:center; margin-top:26px; font-size:12px; color:var(--gray);}
+.footer{text-align:center;margin-top:20px;font-size:13px;color:#4A7BB5;font-weight:700;}
 </style>
 </head>
 <body>
+
+<!-- 背景装飾 -->
+<div class="sky-layer" aria-hidden="true">
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+  <div class="cloud c4"></div>
+</div>
+<div class="sun-deco" aria-hidden="true"></div>
+<div class="hills-deco" aria-hidden="true"></div>
+<div class="hill-left" aria-hidden="true"></div>
+
 <div class="app">
   <div class="hero">
-    <div class="sun">🌈</div>
+    <div class="logo-wrap">🌈</div>
     <h1>まなびランド</h1>
-    <p>やりたいのを えらんでね!</p>
+    <p class="hero-sub">やりたいのを えらんでね!</p>
   </div>
 
   <div class="grid" id="grid"></div>
@@ -78,66 +194,50 @@ a.card:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(31,58,95,.12);}
 </div>
 
 <script>
-/* =====================================================
-   ▼▼▼ アプリを ふやすときは この リストに 1こ たすだけ ▼▼▼
-
-   かきかた:
-   { emoji:'アイコン', subject:'きょうか', title:'なまえ',
-     desc:'せつめい', file:'ファイルめい.html', color:'いろ' },
-
-   color は 'blue' 'coral' 'mint' 'sun' 'purple' から えらべます。
-   file を '' (からっぽ) にすると「じゅんびちゅう」カードになります。
-   ===================================================== */
 const APPS = [
   { sec:'math', emoji:'⏰', subject:'さんすう', title:'とけいで かぞえよう!',
     desc:'はりを うごかして「どれだけ たった?」を マスター', file:'tokei-kazoeyou.html', color:'coral' },
-
   { sec:'math', emoji:'⚡', subject:'さんすう', title:'あと なんぷんで ちょうど?',
-    desc:'ばやおしで「ちょうどまで あといくつ」を きたえる!', file:'hayaoshi.html', color:'purple' },
-
+    desc:'はやおしで「ちょうどまで あといくつ」を きたえる!', file:'hayaoshi.html', color:'purple' },
   { sec:'math', emoji:'📏', subject:'さんすう', title:'ながさの もんだい',
     desc:'mm・cm・m の かんかくを みにつけよう!', file:'nagasa.html', color:'mint' },
-
   { sec:'lang', emoji:'🔍', subject:'こくご', title:'ことばさがし',
     desc:'かくれた ことばを みつけよう!', file:'kotoba.html', color:'sun' },
-
   { sec:'lang', emoji:'❔', subject:'じゅんびちゅう', title:'つぎの アプリ',
     desc:'おたのしみに!', file:'', color:'blue' },
 ];
-/* ===================================================== */
 
-const COLORS = {
+const COLORS={
   blue:  ['#3A8DDE','#E5F1FC'],
   coral: ['#FF8A5C','#FFEDE4'],
   mint:  ['#34C48E','#E2F7EE'],
   sun:   ['#E8A912','#FFF3D6'],
   purple:['#9B7BE8','#F0EAFC'],
 };
-
-const SEC_LABELS = {
-  math: { label:'さんすう ➕', color:'#FF8A5C' },
-  lang: { label:'こくご 📖',   color:'#34C48E' },
+const SEC_LABELS={
+  math:{label:'さんすう ➕',color:'#FF8A5C'},
+  lang:{label:'こくご 📖',  color:'#34C48E'},
 };
 
-const grid = document.getElementById('grid');
-let lastSec = null;
+const grid=document.getElementById('grid');
+let lastSec=null;
 APPS.forEach(app=>{
-  if(app.sec && app.sec !== lastSec){
-    lastSec = app.sec;
-    const info = SEC_LABELS[app.sec] || {};
-    const sh = document.createElement('div');
-    sh.className = 'sec-header';
-    sh.style.setProperty('--sh-color', info.color || '#9DB2C7');
-    sh.innerHTML = `<span class="sec-pill">${info.label || app.sec}</span>`;
+  if(app.sec&&app.sec!==lastSec){
+    lastSec=app.sec;
+    const info=SEC_LABELS[app.sec]||{};
+    const sh=document.createElement('div');
+    sh.className='sec-header';
+    sh.style.setProperty('--sh-color',info.color||'#9DB2C7');
+    sh.innerHTML=`<span class="sec-pill">${info.label||app.sec}</span>`;
     grid.appendChild(sh);
   }
-  const [c, cbg] = COLORS[app.color] || COLORS.blue;
-  const a = document.createElement('a');
-  a.className = 'card' + (app.file ? '' : ' soon');
-  a.href = app.file || '#';
-  a.style.setProperty('--accent', c);
-  a.style.setProperty('--accent-bg', cbg);
-  a.innerHTML = `
+  const [c,cbg]=COLORS[app.color]||COLORS.blue;
+  const a=document.createElement('a');
+  a.className='card'+(app.file?'':' soon');
+  a.href=app.file||'#';
+  a.style.setProperty('--accent',c);
+  a.style.setProperty('--accent-bg',cbg);
+  a.innerHTML=`
     <div class="icon">${app.emoji}</div>
     <div class="info">
       <span class="subject">${app.subject}</span>
