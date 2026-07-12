@@ -5,128 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>あと なんぷんで ちょうど?</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
 <style>
-:root{
-  --bg:#EAF6FF; --card:#FFFFFF; --ink:#1F3A5F; --blue:#3A8DDE; --blue-d:#2E74B8;
-  --coral:#FF8A5C; --coral-d:#F0703F; --mint:#34C48E; --sun:#FFC53D; --gray:#9DB2C7; --purple:#9B7BE8;
-}
-*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;}
-body{
-  background:linear-gradient(180deg,#7EC8F0 0%,#C2E8FF 22%,#EAF6FF 36%);
-  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','BIZ UDPGothic','Yu Gothic',sans-serif;
-  color:var(--ink); font-weight:700;
-  min-height:100vh; display:flex; justify-content:center;
-}
-.sky-layer{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-.cloud{position:absolute;background:rgba(255,255,255,.82);border-radius:999px;}
-.cloud::before,.cloud::after{content:'';position:absolute;background:rgba(255,255,255,.88);border-radius:50%;}
-.cloud::before{width:52%;height:175%;top:-52%;left:14%;}
-.cloud::after{width:38%;height:148%;top:-36%;right:14%;}
-.c1{width:100px;height:34px;top:2%;animation:driftR 54s linear infinite;}
-.c2{width:70px;height:24px;top:8%;animation:driftL 41s linear infinite 7s;}
-@keyframes driftR{from{transform:translateX(-180px);}to{transform:translateX(calc(100vw + 180px));}}
-@keyframes driftL{from{transform:translateX(calc(100vw + 180px));}to{transform:translateX(-180px);}}
-.app{width:100%; max-width:480px; padding:12px 12px 30px; position:relative; z-index:1;}
-.top{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; gap:8px;}
-.home{text-decoration:none; font-size:20px; background:#fff; border-radius:14px; padding:6px 10px; box-shadow:0 4px 0 rgba(31,58,95,.12);}
-h1{font-size:17px; font-weight:900; margin:0; letter-spacing:.5px; flex:1; text-align:center;}
-.stars{background:var(--card); border-radius:999px; padding:6px 12px; font-size:16px;
-  box-shadow:0 4px 0 rgba(31,58,95,.12); white-space:nowrap; cursor:pointer;}
-.stars b{color:var(--coral-d); font-size:18px;}
-.stars .hint{font-size:10px; color:var(--gray); margin-left:3px;}
-.levels{display:flex; gap:6px; margin-bottom:8px;}
-.lv{flex:1; border:none; border-radius:18px; padding:10px 2px; font-family:inherit; font-weight:900;
-  font-size:13px; line-height:1.3; background:#fff; color:var(--gray); cursor:pointer;
-  box-shadow:0 5px 0 rgba(31,58,95,.10); transition:transform .1s;}
-.lv small{display:block; font-size:10px; font-weight:700;}
-.lv:active{transform:translateY(3px); box-shadow:0 2px 0 rgba(31,58,95,.10);}
-.lv.on{background:linear-gradient(160deg,var(--blue),var(--blue-d)); color:#fff; box-shadow:0 5px 0 var(--blue-d);}
-.progressrow{display:flex; align-items:center; gap:8px; background:#fff; border-radius:18px;
-  padding:8px 14px; margin-bottom:10px; box-shadow:0 4px 0 rgba(31,58,95,.10);}
-.pcount{font-size:13px; font-weight:900; white-space:nowrap; color:var(--blue-d);}
-.combo{font-size:13px; font-weight:900; color:var(--coral-d); white-space:nowrap; min-width:52px;}
-.dots{display:flex; gap:5px; flex:1; justify-content:flex-end;}
-.dot{width:20px; height:20px; border-radius:50%; background:#E3EDF7; border:2px solid #C4D3E3;
-  display:flex; align-items:center; justify-content:center; font-size:10px; transition:transform .2s;}
-.dot.now{border-color:var(--blue); background:#D9EBFC;}
-.dot.got3{background:var(--purple); border-color:#7A5BC9; transform:scale(1.15);}
-.dot.got2{background:var(--mint); border-color:#26996E; transform:scale(1.15);}
-.dot.got1{background:var(--sun); border-color:#D9A324; transform:scale(1.15);}
-/* ---------- main card ---------- */
-.card{background:var(--card); border-radius:28px; padding:14px 12px; box-shadow:0 6px 0 rgba(31,58,95,.10); text-align:center;}
-.nowtime{font-size:30px; font-weight:900; color:var(--blue-d); line-height:1.2;}
+.combo{font-size:12.5px; font-weight:900; color:var(--on-coral); white-space:nowrap; min-width:52px;}
+/* ---------- とけい カード（このページ固有） ---------- */
+.card{text-align:center;}
+.nowtime{font-size:28px; font-weight:900; color:var(--blue-d); line-height:1.2;}
 .clockwrap{display:flex; justify-content:center; margin:4px 0;}
 .clockwrap svg{width:min(56vw,200px); height:auto; display:block;}
-.ask{font-size:21px; font-weight:900; margin:2px 0 8px;}
-.ask b{color:var(--coral-d); font-size:26px;}
-.speedbar{height:12px; background:#E3EDF7; border-radius:99px; overflow:hidden; margin:0 24px;}
-.speedbar>div{height:100%; width:100%; background:linear-gradient(90deg,var(--sun),var(--coral)); border-radius:99px;}
-.counter{min-height:40px; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:6px;}
-.counter .num{font-size:28px; font-weight:900; color:var(--coral-d); transition:transform .15s;}
+.ask{font-size:19px; font-weight:900; margin:2px 0 10px;}
+.ask b{color:var(--on-coral); font-size:24px;}
+.speedbar{height:11px; background:var(--card-soft); border-radius:var(--radius-pill); overflow:hidden; margin:0 24px;}
+.speedbar>div{height:100%; width:100%; background:linear-gradient(90deg,var(--sun),var(--coral)); border-radius:var(--radius-pill);}
+.counter{min-height:40px; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px;}
+.counter .num{font-size:26px; font-weight:900; color:var(--on-coral); transition:transform .15s;}
 .counter .num.pop{transform:scale(1.35);}
-.counter .lbl{font-size:13px; color:var(--gray);}
-.answerBig{font-size:26px; font-weight:900; color:var(--mint);}
-/* ---------- choices ---------- */
+.counter .lbl{font-size:12.5px; color:var(--ink-soft);}
+.answerBig{font-size:24px; font-weight:900; color:var(--on-mint);}
+/* ---------- 2択チョイス（横並び） ---------- */
 .choices{display:flex; gap:10px; margin-top:12px;}
-.choice{flex:1; border:none; border-radius:22px; padding:20px 4px; font-family:inherit; font-size:22px; font-weight:900;
-  background:#fff; color:var(--ink); cursor:pointer; box-shadow:0 6px 0 rgba(31,58,95,.15); transition:transform .08s;}
-.choice:active{transform:translateY(5px); box-shadow:0 1px 0 rgba(31,58,95,.15);}
-.choice:disabled{opacity:.55;}
-.choice.picked{outline:4px solid var(--blue); outline-offset:-2px; opacity:1 !important;}
-.choice.right{background:linear-gradient(160deg,var(--mint),#26996E); color:#fff; box-shadow:0 5px 0 #1F7A56; opacity:1 !important;}
-.choice.wrong{background:#FFE1E1; color:#D65B5B; opacity:1 !important;}
-.actions{display:flex; gap:8px; margin-top:12px;}
-.act{flex:1; border:none; border-radius:18px; padding:14px 12px; font-family:inherit; font-size:16px; font-weight:900;
-  cursor:pointer; box-shadow:0 5px 0 rgba(31,58,95,.14); background:#fff; color:var(--blue-d);
-  transition:transform .08s;}
-.act:active{transform:translateY(4px); box-shadow:0 1px 0 rgba(31,58,95,.12);}
-.act.primary{background:linear-gradient(160deg,#FFD54F,var(--sun)); color:#7A5200; box-shadow:0 5px 0 #C99000;}
-.act.icon{flex:0 0 64px; font-size:20px;}
-.act.icon.on{background:linear-gradient(160deg,var(--blue),var(--blue-d)); color:#fff; box-shadow:0 5px 0 var(--blue-d);}
-.spacer{flex:1;}
-.msg{text-align:center; min-height:44px; font-size:17px; font-weight:900; margin-top:8px; line-height:1.4;
-  background:rgba(255,255,255,.7); border-radius:16px; padding:8px 14px;}
-.msg.good{color:var(--mint);} .msg.oops{color:var(--coral-d);} .msg.think{color:var(--blue-d);} .msg.fast{color:var(--purple);}
-/* ---------- reward / zukan / unlock (shared look) ---------- */
-.reward,.zukan,.unlock{position:fixed; inset:0; background:rgba(31,58,95,.45); display:none; justify-content:center; z-index:60; padding:20px;}
-.reward,.unlock{align-items:center;}
-.zukan{align-items:flex-end; padding:0;}
-.rewardcard,.unlockcard{background:#fff; border-radius:28px; padding:26px 22px; text-align:center; max-width:340px; width:100%;
-  box-shadow:0 8px 0 rgba(31,58,95,.25); animation:popin .35s;}
-@keyframes popin{from{transform:scale(.7); opacity:0;} to{transform:scale(1); opacity:1;}}
-.rewardcard .big,.unlockcard .ue{font-size:64px; line-height:1;}
-.rewardcard h2{font-size:24px; font-weight:900; margin:10px 0 4px;}
-.rewardcard .rstars{font-size:26px; font-weight:900; color:var(--coral-d); margin:8px 0 2px;}
-.rewardcard .rtotal{font-size:14px; color:var(--gray); margin-bottom:16px;}
-.rewardcard .rmsg{font-size:16px; margin-bottom:18px;}
-.rewardcard button,.unlockcard button{width:100%; border:none; border-radius:18px; padding:15px; font-family:inherit;
-  font-size:18px; font-weight:900; background:var(--sun); color:#7A5200; box-shadow:0 4px 0 #D9A324; cursor:pointer;}
-.unlockcard h3{font-size:20px; font-weight:900; margin:8px 0 2px; color:var(--coral-d);}
-.unlockcard .un{font-size:22px; font-weight:900; margin-bottom:16px;}
-.zukancard{background:#fff; border-radius:28px 28px 0 0; padding:20px 18px 26px; width:100%; max-width:480px; max-height:82vh; overflow:auto;}
-.zukancard h2{font-size:20px; font-weight:900; margin:0 0 4px; text-align:center;}
-.znext{text-align:center; font-size:13px; font-weight:900; color:var(--blue-d); margin-bottom:6px;}
-.zbar{height:12px; background:#E3EDF7; border-radius:99px; overflow:hidden; margin:0 10px 14px;}
-.zbar>div{height:100%; background:linear-gradient(90deg,var(--sun),var(--coral)); border-radius:99px; transition:width .4s;}
-.zgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
-.badge{background:#F4F9FF; border-radius:18px; padding:12px 6px; text-align:center;}
-.badge .be{font-size:34px; line-height:1.1;}
-.badge .bn{font-size:12px; font-weight:900; margin-top:4px;}
-.badge .bt{font-size:11px; color:var(--gray);}
-.badge.locked .be{filter:grayscale(1); opacity:.45;}
-.badge.locked .bn{color:var(--gray);}
-.zclose{width:100%; margin-top:14px; border:none; border-radius:16px; padding:13px; font-family:inherit;
-  font-size:16px; font-weight:900; background:var(--blue); color:#fff; box-shadow:0 3px 0 var(--blue-d); cursor:pointer;}
-@media (prefers-reduced-motion: reduce){ .rewardcard,.unlockcard{animation:none;} }
-.confetti{position:fixed; top:-12px; width:10px; height:14px; border-radius:3px; pointer-events:none; z-index:70;
-  animation:fall linear forwards;}
-@keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
-@media (prefers-reduced-motion: reduce){ .confetti{display:none;} }
+.choice{flex:1;}
+.choice.picked{outline:3px solid var(--blue); outline-offset:-2px; opacity:1 !important;}
 </style>
 </head>
 <body>
-<div class="sky-layer" aria-hidden="true"><div class="cloud c1"></div><div class="cloud c2"></div></div>
+<div class="sky-layer" aria-hidden="true"><div class="cloud c1"></div><div class="cloud c2"></div><div class="deco-star s1">&#10022;</div><div class="deco-heart h1">&#9825;</div></div>
 <div class="app">
   <div class="top">
     <a class="home" href="index.html" title="もくじへ">🏠</a>
@@ -243,27 +146,27 @@ function tween(ms,fn){return new Promise(res=>{
 const NS='http://www.w3.org/2000/svg';
 const el=(n,at)=>{const e=document.createElementNS(NS,n);for(const k in at)e.setAttribute(k,at[k]);return e;};
 const svg=el('svg',{viewBox:'0 0 300 300'});
-svg.appendChild(el('circle',{cx:CX,cy:CY,r:120,fill:'#FFFDF7',stroke:'#3A8DDE','stroke-width':7}));
-const arc=el('path',{fill:'rgba(52,196,142,.30)',d:''}); svg.appendChild(arc);
+svg.appendChild(el('circle',{cx:CX,cy:CY,r:120,fill:'#FFFDF7',stroke:'#8FC5F5','stroke-width':7}));
+const arc=el('path',{fill:'rgba(156,227,201,.30)',d:''}); svg.appendChild(arc);
 for(let i=0;i<60;i++){
   const a=i*6,big=i%5===0;
   const [x1,y1]=pt(a,big?104:110),[x2,y2]=pt(a,116);
-  svg.appendChild(el('line',{x1,y1,x2,y2,stroke:big?'#1F3A5F':'#C4D3E3','stroke-width':big?4:2,'stroke-linecap':'round'}));
+  svg.appendChild(el('line',{x1,y1,x2,y2,stroke:big?'#3E5578':'#D7E3F2','stroke-width':big?4:2,'stroke-linecap':'round'}));
 }
 for(let n=1;n<=12;n++){
   const [x,y]=pt(n*30,88);
-  const t=el('text',{x,y:y+8,'text-anchor':'middle','font-size':24,'font-weight':900,fill:'#1F3A5F','font-family':'inherit'});
+  const t=el('text',{x,y:y+8,'text-anchor':'middle','font-size':24,'font-weight':900,fill:'#3E5578','font-family':'inherit'});
   t.textContent=n; svg.appendChild(t);
 }
 for(let n=1;n<=12;n++){
   const [x,y]=pt(n*30,137);
-  const t=el('text',{x,y:y+4,'text-anchor':'middle','font-size':12,'font-weight':700,fill:'#9DB2C7','font-family':'inherit'});
+  const t=el('text',{x,y:y+4,'text-anchor':'middle','font-size':12,'font-weight':700,fill:'#93A6C2','font-family':'inherit'});
   t.textContent=n*5; svg.appendChild(t);
 }
-const hHour=el('line',{x1:CX,y1:CY,x2:CX,y2:CY-55,stroke:'#1F3A5F','stroke-width':11,'stroke-linecap':'round'});
-const hMin =el('line',{x1:CX,y1:CY,x2:CX,y2:CY-92,stroke:'#FF8A5C','stroke-width':8,'stroke-linecap':'round'});
+const hHour=el('line',{x1:CX,y1:CY,x2:CX,y2:CY-55,stroke:'#3E5578','stroke-width':11,'stroke-linecap':'round'});
+const hMin =el('line',{x1:CX,y1:CY,x2:CX,y2:CY-92,stroke:'#FFB49B','stroke-width':8,'stroke-linecap':'round'});
 svg.appendChild(hHour); svg.appendChild(hMin);
-svg.appendChild(el('circle',{cx:CX,cy:CY,r:8,fill:'#1F3A5F'}));
+svg.appendChild(el('circle',{cx:CX,cy:CY,r:8,fill:'#3E5578'}));
 const bubbles=el('g',{}); svg.appendChild(bubbles);
 document.getElementById('clock').appendChild(svg);
 
@@ -280,7 +183,7 @@ function drawArc(a0,sweep){
 function popBubble(minute,label){
   const [x,y]=pt((minute%60)*6,137);
   const g=el('g',{opacity:0});
-  g.appendChild(el('circle',{cx:x,cy:y,r:15,fill:'#34C48E'}));
+  g.appendChild(el('circle',{cx:x,cy:y,r:15,fill:'#9CE3C9'}));
   const t=el('text',{x,y:y+4.5,'text-anchor':'middle','font-size':12,'font-weight':900,fill:'#fff','font-family':'inherit'});
   t.textContent=label; g.appendChild(t);
   bubbles.appendChild(g);
@@ -523,7 +426,7 @@ async function pick(btn,val){
 
 /* ---------- confetti ---------- */
 function confetti(n){
-  const colors=['#FF8A5C','#3A8DDE','#FFC53D','#34C48E','#9B7BE8'];
+  const colors=['#FFB49B','#8FC5F5','#FFDE8E','#9CE3C9','#CBB9F2'];
   for(let i=0;i<n;i++){
     const c=document.createElement('div');
     c.className='confetti';

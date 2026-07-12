@@ -1,0 +1,231 @@
+/* ==========================================================================
+   まなびランド 共通テーマ — やさしいパステル・まる系デザインシステム
+   全ページ (index / tokei-kazoeyou / hayaoshi / nagasa / kotoba / kanji) で共有
+   ========================================================================== */
+
+:root{
+  /* --- 背景（淡いパステルグラデーション） --- */
+  --bg-1:#DCEEFF;
+  --bg-2:#EDF2FF;
+  --bg-3:#FFF7EC;
+
+  /* --- ベース --- */
+  --card:#FFFFFF;
+  --card-soft:#F5F9FF;
+  --ink:#3E5578;
+  --ink-soft:#93A6C2;
+
+  /* --- アクセント（パステル） --- */
+  --blue:#8FC5F5;      --blue-d:#5B98D8;
+  --coral:#FFB49B;     --coral-d:#EF8A6C;
+  --mint:#9CE3C9;      --mint-d:#4FB98F;
+  --sun:#FFDE8E;       --sun-d:#E3A93D;
+  --purple:#CBB9F2;    --purple-d:#A488DE;
+  --gray:#BDC9DC;
+
+  /* 文字が乗るときの読みやすい配色 */
+  --on-blue:#2E4E72;
+  --on-coral:#8A4227;
+  --on-mint:#1E6B4C;
+  --on-sun:#7A5200;
+  --on-purple:#4E3684;
+
+  /* --- 形 --- */
+  --radius-pill:999px;
+  --radius-card:24px;
+  --radius-card-sm:18px;
+
+  /* --- 影（やわらかく・うすく） --- */
+  --shadow-xs:0 2px 8px rgba(130,155,200,.14);
+  --shadow-sm:0 4px 14px rgba(130,155,200,.16);
+  --shadow-md:0 8px 22px rgba(130,155,200,.18);
+  --shadow-lg:0 12px 32px rgba(130,155,200,.22);
+
+  --overlay:rgba(70,90,120,.38);
+}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0; padding:0;}
+body{
+  background:linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 45%, var(--bg-3) 100%);
+  background-attachment:fixed;
+  font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','BIZ UDPGothic','Yu Gothic',sans-serif;
+  color:var(--ink); font-weight:700;
+  min-height:100vh;
+}
+
+/* ---------- ふわふわ空デコ：くも・ほし・はーと ---------- */
+.sky-layer{position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden;}
+.cloud{position:absolute; background:rgba(255,255,255,.85); border-radius:999px;}
+.cloud::before,.cloud::after{content:''; position:absolute; background:rgba(255,255,255,.9); border-radius:50%;}
+.cloud::before{width:52%; height:175%; top:-52%; left:14%;}
+.cloud::after{width:38%; height:148%; top:-36%; right:14%;}
+.c1{width:100px; height:34px; top:2%; animation:driftR 54s linear infinite;}
+.c2{width:70px; height:24px; top:8%; animation:driftL 41s linear infinite 7s;}
+.c3{width:56px; height:20px; top:14%; animation:driftR 46s linear infinite 3s;}
+@keyframes driftR{from{transform:translateX(-180px);} to{transform:translateX(calc(100vw + 180px));}}
+@keyframes driftL{from{transform:translateX(calc(100vw + 180px));} to{transform:translateX(-180px);}}
+.deco-star,.deco-heart{position:absolute; opacity:.55; font-size:16px; animation:bob 6s ease-in-out infinite;}
+.deco-star{color:var(--sun-d);} .deco-heart{color:var(--coral);}
+.deco-star.s1{top:5%; left:11%; animation-delay:.4s;}
+.deco-heart.h1{top:15%; right:9%; font-size:14px; animation-delay:2.1s;}
+@keyframes bob{0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);}}
+@media (prefers-reduced-motion:reduce){
+  .cloud,.deco-star,.deco-heart{animation:none;}
+}
+
+/* ---------- 共通レイアウト ---------- */
+.app{width:100%; max-width:480px; margin:0 auto; padding:14px 14px 32px; position:relative; z-index:1;}
+
+/* ---------- ヘッダー ---------- */
+.top{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px;}
+.home{
+  text-decoration:none; font-size:19px; line-height:1;
+  background:var(--card); border-radius:var(--radius-pill);
+  padding:9px 13px; box-shadow:var(--shadow-sm); display:inline-flex;
+}
+h1{font-size:17px; font-weight:900; margin:0; letter-spacing:.4px; flex:1; text-align:center; color:var(--ink);}
+.stars{
+  background:var(--card); border-radius:var(--radius-pill); padding:8px 15px; font-size:15px;
+  box-shadow:var(--shadow-sm); white-space:nowrap; cursor:pointer; display:inline-flex; align-items:center;
+}
+.stars b{color:var(--on-coral); font-size:17px; margin:0 2px;}
+.stars .hint{font-size:10px; color:var(--ink-soft); margin-left:4px;}
+
+/* ---------- ピル型 選択タブ（学年・レベル・モード） ---------- */
+.levels,.tabs{display:flex; gap:8px; margin-bottom:10px;}
+.lv,.tab{
+  flex:1; border:none; border-radius:var(--radius-pill); padding:11px 4px; font-family:inherit; font-weight:900;
+  font-size:12.5px; line-height:1.3; background:var(--card); color:var(--ink-soft); cursor:pointer;
+  box-shadow:var(--shadow-xs); transition:transform .12s, box-shadow .12s, background .15s, color .15s;
+}
+.lv small{display:block; font-size:9.5px; font-weight:700; margin-top:1px;}
+.lv:active,.tab:active{transform:translateY(2px); box-shadow:none;}
+.lv.on,.tab.on{
+  background:linear-gradient(160deg, var(--blue), var(--blue-d)); color:#fff; box-shadow:var(--shadow-md);
+}
+
+/* ---------- 進行状況バー ---------- */
+.progressrow{
+  display:flex; align-items:center; gap:8px; background:var(--card); border-radius:var(--radius-pill);
+  padding:9px 16px; margin-bottom:12px; box-shadow:var(--shadow-xs);
+}
+.pcount{font-size:12.5px; font-weight:900; white-space:nowrap; color:var(--blue-d);}
+.dots{display:flex; gap:5px; flex:1; justify-content:flex-end;}
+.dot{
+  width:19px; height:19px; border-radius:50%; background:var(--card-soft); border:2px solid #E1E9F5;
+  display:flex; align-items:center; justify-content:center; font-size:10px; transition:transform .2s;
+}
+.dot.now{border-color:var(--blue); background:#E4F1FF;}
+.dot.got3{background:var(--purple); border-color:var(--purple-d); transform:scale(1.15);}
+.dot.got2{background:var(--mint); border-color:var(--mint-d); transform:scale(1.15);}
+.dot.got1{background:var(--sun); border-color:var(--sun-d); transform:scale(1.15);}
+
+/* ---------- カード（コンテンツを包む白いふわっとした箱） ---------- */
+.card{background:var(--card); border-radius:var(--radius-card); padding:16px 12px; box-shadow:var(--shadow-md);}
+
+/* ---------- 選択肢（カード型） ---------- */
+.choices{display:flex; flex-direction:column; gap:10px;}
+.choice,.ansbtn{
+  border:none; border-radius:var(--radius-card-sm); padding:17px 16px; font-family:inherit; font-size:20px; font-weight:900;
+  background:var(--card); color:var(--ink); cursor:pointer; box-shadow:var(--shadow-sm); transition:transform .1s, box-shadow .1s;
+}
+.choice:active,.ansbtn:active{transform:translateY(2px); box-shadow:var(--shadow-xs);}
+.choice:disabled,.ansbtn[disabled]{opacity:.55; pointer-events:none;}
+.choice.picked{outline:3px solid var(--blue); outline-offset:-2px; opacity:1 !important;}
+.choice.right,.ansbtn.correct{
+  background:linear-gradient(160deg, var(--mint), var(--mint-d)); color:#fff; box-shadow:var(--shadow-md); opacity:1 !important;
+}
+.choice.wrong,.ansbtn.wrong{background:#FFE2DA; color:var(--on-coral); box-shadow:var(--shadow-xs); opacity:1 !important;}
+
+/* ---------- 操作ボタン（ピル型） ---------- */
+.actions{display:flex; gap:8px; margin-top:14px;}
+.act{
+  flex:1; border:none; border-radius:var(--radius-pill); padding:14px 12px; font-family:inherit; font-size:15px; font-weight:900;
+  cursor:pointer; box-shadow:var(--shadow-sm); background:var(--card); color:var(--blue-d); transition:transform .1s, box-shadow .1s;
+}
+.act:active{transform:translateY(2px); box-shadow:var(--shadow-xs);}
+.act.primary{background:linear-gradient(160deg, var(--sun), var(--sun-d)); color:var(--on-sun); box-shadow:var(--shadow-md);}
+.act.icon{flex:0 0 60px; font-size:19px;}
+.act.icon.on{background:linear-gradient(160deg, var(--blue), var(--blue-d)); color:#fff; box-shadow:var(--shadow-md);}
+.act:disabled{opacity:.4;}
+.spacer{flex:1;}
+
+/* ---------- メッセージ帯 ---------- */
+.msg{
+  text-align:center; min-height:42px; font-size:15px; font-weight:900; margin-top:10px; line-height:1.5;
+  background:rgba(255,255,255,.75); border-radius:var(--radius-card-sm); padding:9px 14px;
+}
+.msg.good{color:var(--on-mint);} .msg.oops{color:var(--on-coral);} .msg.think{color:var(--blue-d);} .msg.fast{color:var(--on-purple);}
+
+/* ---------- ごほうび画面 ---------- */
+.reward,.unlock{
+  position:fixed; inset:0; background:var(--overlay); display:none; align-items:center; justify-content:center;
+  z-index:60; padding:20px;
+}
+.rewardcard,.unlockcard{
+  background:var(--card); border-radius:28px; padding:28px 24px; text-align:center; max-width:340px; width:100%;
+  box-shadow:var(--shadow-lg); animation:popin .35s;
+}
+@keyframes popin{from{transform:scale(.75); opacity:0;} to{transform:scale(1); opacity:1;}}
+.rewardcard .big,.unlockcard .ue{font-size:60px; line-height:1;}
+.rewardcard h2{font-size:22px; font-weight:900; margin:10px 0 4px;}
+.rewardcard .rstars{font-size:24px; font-weight:900; color:var(--on-coral); margin:8px 0 2px;}
+.rewardcard .rtotal{font-size:13px; color:var(--ink-soft); margin-bottom:16px;}
+.rewardcard .rmsg{font-size:15px; margin-bottom:18px;}
+.rewardcard button,.unlockcard button{
+  width:100%; border:none; border-radius:var(--radius-pill); padding:15px; font-family:inherit;
+  font-size:17px; font-weight:900; background:linear-gradient(160deg, var(--sun), var(--sun-d));
+  color:var(--on-sun); box-shadow:var(--shadow-md); cursor:pointer;
+}
+.unlockcard h3{font-size:18px; font-weight:900; margin:8px 0 2px; color:var(--on-coral);}
+.unlockcard .un{font-size:20px; font-weight:900; margin-bottom:16px;}
+@media (prefers-reduced-motion:reduce){.rewardcard,.unlockcard{animation:none;}}
+
+/* ---------- バッジずかん ---------- */
+.zukan{position:fixed; inset:0; background:var(--overlay); display:none; align-items:flex-end; justify-content:center; z-index:62;}
+.zukancard{
+  background:var(--card); border-radius:28px 28px 0 0; padding:22px 18px 26px; width:100%; max-width:480px;
+  max-height:82vh; overflow:auto;
+}
+.zukancard h2{font-size:19px; font-weight:900; margin:0 0 6px; text-align:center;}
+.znext{text-align:center; font-size:12.5px; font-weight:900; color:var(--blue-d); margin-bottom:8px;}
+.zbar{height:12px; background:var(--card-soft); border-radius:var(--radius-pill); overflow:hidden; margin:0 10px 16px;}
+.zbar>div{height:100%; background:linear-gradient(90deg, var(--sun), var(--coral)); border-radius:var(--radius-pill); transition:width .4s;}
+.zgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+.badge{background:var(--card-soft); border-radius:var(--radius-card-sm); padding:13px 6px; text-align:center;}
+.badge .be{font-size:32px; line-height:1.1;}
+.badge .bn{font-size:11.5px; font-weight:900; margin-top:4px;}
+.badge .bt{font-size:10.5px; color:var(--ink-soft);}
+.badge.locked .be{filter:grayscale(1); opacity:.4;}
+.badge.locked .bn{color:var(--ink-soft);}
+.zclose{
+  width:100%; margin-top:16px; border:none; border-radius:var(--radius-pill); padding:14px; font-family:inherit;
+  font-size:15px; font-weight:900; background:linear-gradient(160deg, var(--blue), var(--blue-d));
+  color:#fff; box-shadow:var(--shadow-md); cursor:pointer;
+}
+
+/* ---------- ことば/かんじさがし グリッド（kotoba / kanji 共通） ---------- */
+.grid-wrap{background:var(--card); border-radius:var(--radius-card); padding:14px; box-shadow:var(--shadow-md);
+  touch-action:none; user-select:none;}
+.word-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:5px;}
+.wc{aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+  font-size:19px; font-weight:900; border-radius:12px; background:var(--card-soft); color:var(--ink);
+  cursor:pointer; transition:background .08s, color .08s;}
+.wc.selecting{background:var(--blue); color:#fff;}
+.wc.f0{background:var(--coral); color:#fff;}
+.wc.f1{background:var(--blue); color:#fff;}
+.wc.f2{background:var(--mint); color:#fff;}
+.wc.f3{background:var(--purple); color:#fff;}
+.wc.f4{background:var(--sun-d); color:#fff;}
+@keyframes wrongflash{0%,100%{background:var(--card-soft);} 50%{background:#FFD9CE;}}
+.wc.wrong{animation:wrongflash .4s ease;}
+.wordlist{display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; justify-content:center;}
+.wtag{font-size:14px; font-weight:900; border-radius:var(--radius-pill); padding:7px 16px;
+  background:var(--card); color:var(--ink); box-shadow:var(--shadow-xs);}
+.wtag.found{text-decoration:line-through; color:#fff; box-shadow:none;}
+
+/* ---------- 紙吹雪 ---------- */
+.confetti{position:fixed; top:-12px; width:9px; height:13px; border-radius:4px; pointer-events:none; z-index:70; animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
+@media (prefers-reduced-motion:reduce){.confetti{display:none;}}
