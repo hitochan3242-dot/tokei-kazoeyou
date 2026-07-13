@@ -13,15 +13,22 @@
   --card:#FFFFFF;
   --card-soft:#F5F9FF;
   --ink:#3E5578;
-  --ink-soft:#93A6C2;
+  --ink-soft:#5F7695;
 
-  /* --- アクセント（パステル） --- */
-  --blue:#8FC5F5;      --blue-d:#5B98D8;
+  /* --- アクセント（パステル・淡い装飾/背景用） --- */
+  --blue:#8FC5F5;      --blue-d:#3572B5;
   --coral:#FFB49B;     --coral-d:#EF8A6C;
-  --mint:#9CE3C9;      --mint-d:#4FB98F;
+  --mint:#9CE3C9;      --mint-d:#1D8562;
   --sun:#FFDE8E;       --sun-d:#E3A93D;
   --purple:#CBB9F2;    --purple-d:#A488DE;
   --gray:#BDC9DC;
+
+  /* 白文字を のせる ときに 読める こい版（グリッド・アクティブピル用） */
+  --blue-deep:#215D97;
+  --coral-deep:#B04F2C;
+  --mint-deep:#187A51;
+  --sun-deep:#8C6400;
+  --purple-deep:#6A4AB0;
 
   /* 文字が乗るときの読みやすい配色 */
   --on-blue:#2E4E72;
@@ -102,7 +109,7 @@ h1{font-size:17px; font-weight:900; margin:0; letter-spacing:.4px; flex:1; text-
 .lv small{display:block; font-size:9.5px; font-weight:700; margin-top:1px;}
 .lv:active,.tab:active{transform:translateY(2px); box-shadow:none;}
 .lv.on,.tab.on{
-  background:linear-gradient(160deg, var(--blue), var(--blue-d)); color:#fff; box-shadow:var(--shadow-md);
+  background:linear-gradient(160deg, var(--blue-d), var(--blue-deep)); color:#fff; box-shadow:var(--shadow-md);
 }
 
 /* ---------- 進行状況バー ---------- */
@@ -134,7 +141,7 @@ h1{font-size:17px; font-weight:900; margin:0; letter-spacing:.4px; flex:1; text-
 .choice:disabled,.ansbtn[disabled]{opacity:.55; pointer-events:none;}
 .choice.picked{outline:3px solid var(--blue); outline-offset:-2px; opacity:1 !important;}
 .choice.right,.ansbtn.correct{
-  background:linear-gradient(160deg, var(--mint), var(--mint-d)); color:#fff; box-shadow:var(--shadow-md); opacity:1 !important;
+  background:linear-gradient(160deg, var(--mint-d), var(--mint-deep)); color:#fff; box-shadow:var(--shadow-md); opacity:1 !important;
 }
 .choice.wrong,.ansbtn.wrong{background:#FFE2DA; color:var(--on-coral); box-shadow:var(--shadow-xs); opacity:1 !important;}
 
@@ -147,7 +154,7 @@ h1{font-size:17px; font-weight:900; margin:0; letter-spacing:.4px; flex:1; text-
 .act:active{transform:translateY(2px); box-shadow:var(--shadow-xs);}
 .act.primary{background:linear-gradient(160deg, var(--sun), var(--sun-d)); color:var(--on-sun); box-shadow:var(--shadow-md);}
 .act.icon{flex:0 0 60px; font-size:19px;}
-.act.icon.on{background:linear-gradient(160deg, var(--blue), var(--blue-d)); color:#fff; box-shadow:var(--shadow-md);}
+.act.icon.on{background:linear-gradient(160deg, var(--blue-d), var(--blue-deep)); color:#fff; box-shadow:var(--shadow-md);}
 .act:disabled{opacity:.4;}
 .spacer{flex:1;}
 
@@ -201,7 +208,7 @@ h1{font-size:17px; font-weight:900; margin:0; letter-spacing:.4px; flex:1; text-
 .badge.locked .bn{color:var(--ink-soft);}
 .zclose{
   width:100%; margin-top:16px; border:none; border-radius:var(--radius-pill); padding:14px; font-family:inherit;
-  font-size:15px; font-weight:900; background:linear-gradient(160deg, var(--blue), var(--blue-d));
+  font-size:15px; font-weight:900; background:linear-gradient(160deg, var(--blue-d), var(--blue-deep));
   color:#fff; box-shadow:var(--shadow-md); cursor:pointer;
 }
 
@@ -212,12 +219,12 @@ h1{font-size:17px; font-weight:900; margin:0; letter-spacing:.4px; flex:1; text-
 .wc{aspect-ratio:1; display:flex; align-items:center; justify-content:center;
   font-size:19px; font-weight:900; border-radius:12px; background:var(--card-soft); color:var(--ink);
   cursor:pointer; transition:background .08s, color .08s;}
-.wc.selecting{background:var(--blue); color:#fff;}
-.wc.f0{background:var(--coral); color:#fff;}
-.wc.f1{background:var(--blue); color:#fff;}
-.wc.f2{background:var(--mint); color:#fff;}
-.wc.f3{background:var(--purple); color:#fff;}
-.wc.f4{background:var(--sun-d); color:#fff;}
+.wc.selecting{background:var(--blue-deep); color:#fff;}
+.wc.f0{background:var(--coral-deep); color:#fff;}
+.wc.f1{background:var(--blue-deep); color:#fff;}
+.wc.f2{background:var(--mint-deep); color:#fff;}
+.wc.f3{background:var(--purple-deep); color:#fff;}
+.wc.f4{background:var(--sun-deep); color:#fff;}
 @keyframes wrongflash{0%,100%{background:var(--card-soft);} 50%{background:#FFD9CE;}}
 .wc.wrong{animation:wrongflash .4s ease;}
 .wordlist{display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; justify-content:center;}
@@ -229,3 +236,73 @@ h1{font-size:17px; font-weight:900; margin:0; letter-spacing:.4px; flex:1; text-
 .confetti{position:fixed; top:-12px; width:9px; height:13px; border-radius:4px; pointer-events:none; z-index:70; animation:fall linear forwards;}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
 @media (prefers-reduced-motion:reduce){.confetti{display:none;}}
+
+
+/* ========================================================================
+   かわいいイラスト版 追加テーマ
+   ======================================================================== */
+:root{
+  --peach:#FFD6C8;
+  --lemon:#FFF0A8;
+  --aqua:#BDEFE6;
+  --lavender:#DDD2FF;
+  --pink:#FFCFE0;
+}
+body::after{
+  content:""; position:fixed; left:0; right:0; bottom:0; height:115px;
+  pointer-events:none; z-index:0; opacity:.72;
+  background:
+    radial-gradient(ellipse at 10% 110%, #BDE9A9 0 34%, transparent 35%),
+    radial-gradient(ellipse at 38% 118%, #A8D993 0 37%, transparent 38%),
+    radial-gradient(ellipse at 72% 116%, #BDE9A9 0 38%, transparent 39%),
+    radial-gradient(ellipse at 102% 110%, #A8D993 0 35%, transparent 36%);
+}
+.sky-layer::after{
+  content:"🌈"; position:absolute; right:5%; top:3.5%; font-size:43px;
+  opacity:.55; transform:rotate(4deg); filter:drop-shadow(0 4px 5px rgba(85,110,150,.12));
+}
+.app::before{
+  content:"🐻"; position:fixed; right:max(8px,calc((100vw - 500px)/2)); bottom:10px;
+  font-size:54px; z-index:2; filter:drop-shadow(0 5px 4px rgba(70,90,120,.18));
+  animation:mascotBob 3.2s ease-in-out infinite; pointer-events:none;
+}
+@keyframes mascotBob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+.top{
+  background:rgba(255,255,255,.47); border:2px solid rgba(255,255,255,.8);
+  border-radius:22px; padding:8px; backdrop-filter:blur(5px);
+}
+.home,.stars,.lv,.tab,.progressrow,.card,.choice,.ansbtn,.act,.msg,.grid-wrap,.wtag{
+  border:2px solid rgba(255,255,255,.9);
+}
+.card{position:relative; overflow:hidden;}
+.card::after{
+  content:""; position:absolute; width:80px; height:80px; right:-30px; top:-34px;
+  border-radius:50%; background:rgba(255,222,142,.25); pointer-events:none;
+}
+.lv:nth-child(2n).on,.tab:nth-child(2n).on{background:linear-gradient(160deg,var(--coral-d),var(--coral-deep));}
+.lv:nth-child(3n).on,.tab:nth-child(3n).on{background:linear-gradient(160deg,var(--mint-d),var(--mint-deep));}
+.choice:hover,.ansbtn:hover,.act:hover,.lv:hover,.tab:hover,.home:hover,.stars:hover{transform:translateY(-2px);}
+.choice:focus-visible,.ansbtn:focus-visible,.act:focus-visible,.lv:focus-visible,.tab:focus-visible,.home:focus-visible{
+  outline:4px solid var(--sun); outline-offset:3px;
+}
+.rewardcard::before{content:"🎉 🐰 🎉";display:block;font-size:31px;margin-bottom:4px;}
+.unlockcard::before{content:"✨ 🐣 ✨";display:block;font-size:30px;margin-bottom:4px;}
+@media(max-width:420px){
+  .app::before{font-size:43px;bottom:4px}.sky-layer::after{font-size:34px}.top h1{font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){.app::before{animation:none}.choice:hover,.ansbtn:hover,.act:hover,.lv:hover,.tab:hover{transform:none}}
+
+.mascot-guide{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 4px 11px;padding:8px 14px;background:rgba(255,255,255,.76);border:2px solid #fff;border-radius:20px;box-shadow:var(--shadow-xs);font-size:11px;color:var(--ink-soft);line-height:1.35}
+.mascot-guide .mascot-face{font-size:34px;line-height:1;filter:drop-shadow(0 3px 2px rgba(70,90,120,.14))}.mascot-guide b{font-size:13px;color:var(--coral-deep)}
+
+/* ===== Professional site polish shared by learning pages ===== */
+body{background-attachment:fixed}
+.app{max-width:540px;padding-top:14px}
+.top{position:sticky;top:10px;z-index:25;box-shadow:0 12px 34px rgba(60,94,130,.13)!important}
+.top h1{letter-spacing:.02em}
+.home,.stars{min-height:42px}
+.card,.grid-wrap{box-shadow:0 14px 36px rgba(73,108,143,.12)!important}
+.choice,.ansbtn,.act,.lv,.tab{transition:transform .16s ease,box-shadow .16s ease,filter .16s ease}
+.choice:hover,.ansbtn:hover,.act:hover,.lv:hover,.tab:hover{filter:brightness(1.015)}
+.mascot-guide{backdrop-filter:blur(10px);box-shadow:0 8px 26px rgba(72,108,142,.09)}
+@media(min-width:760px){.app{max-width:620px}.card{padding:22px 18px}.top{padding:10px 12px}}

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>アルファベットクイズ</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<style>
+.miss{font-size:12.5px; font-weight:900; color:var(--on-coral); white-space:nowrap; min-width:60px; text-align:right;}
+
+.view{display:none;}
+.view.on{display:block;}
+
+/* ---------- よみかた／大文字小文字（このページ固有） ---------- */
+.wordcard{background:var(--card); border-radius:var(--radius-card); padding:34px 14px; text-align:center;
+  box-shadow:var(--shadow-md); margin-bottom:12px;}
+.wordcard .kj{font-size:clamp(56px,18vw,88px); font-weight:900; letter-spacing:.02em; color:var(--ink); line-height:1.2;}
+.caseHint{margin-top:6px; font-size:12.5px; font-weight:900; color:var(--ink-soft);}
+.anslist{display:flex; flex-direction:column; gap:10px;}
+.ansbtn.wrong{background:#FFE2DA; color:var(--on-coral);}
+
+/* ---------- じゅんばん（このページ固有） ---------- */
+.order-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+.obtn{border:none; border-radius:var(--radius-card-sm); padding:24px 6px; font-family:inherit; font-size:27px; font-weight:900;
+  background:var(--card); color:var(--ink); cursor:pointer; box-shadow:var(--shadow-sm); transition:transform .1s, box-shadow .1s;}
+.obtn:active{transform:translateY(2px); box-shadow:var(--shadow-xs);}
+.obtn.done{background:linear-gradient(160deg, var(--mint-d), var(--mint-deep)); color:#fff; box-shadow:var(--shadow-md); pointer-events:none;}
+.obtn.wrong{background:#FFE2DA; color:var(--on-coral);}
+.obtn:disabled{opacity:1;}
+</style>
+</head>
+<body>
+<div class="sky-layer" aria-hidden="true"><div class="cloud c1"></div><div class="cloud c2"></div><div class="deco-star s1">&#10022;</div><div class="deco-heart h1">&#9825;</div></div>
+<div class="app">
+  <div class="top">
+    <a href="index.html" class="home" title="もくじへ">🏠</a>
+    <h1>🔤 アルファベットクイズ</h1>
+    <div class="stars" id="starsPill">⭐<b id="stars">0</b><span class="hint">📖</span></div>
+  </div>
+
+  <div class="mascot-guide" aria-label="おうえんキャラクター"><span class="mascot-face">🐸</span><span>ゆっくりで だいじょうぶ！<br><b>いっしょに ABCを おぼえよう</b></span></div>
+
+  <div class="levels" id="levels">
+    <button class="lv on" data-lv="1">レベル1<small>A〜M</small></button>
+    <button class="lv" data-lv="2">レベル2<small>A〜Z ぜんぶ</small></button>
+  </div>
+
+  <div class="tabs" id="modes">
+    <button class="tab on" data-m="read">🔤 よみかた</button>
+    <button class="tab" data-m="case">🔡 大文字小文字</button>
+    <button class="tab" data-m="order">🔠 じゅんばん</button>
+  </div>
+
+  <div class="progressrow">
+    <div class="pcount" id="pcount">1/8</div>
+    <div class="dots" id="dots"></div>
+    <div class="miss" id="missCount"></div>
+  </div>
+
+  <!-- ===== よみかたクイズ ===== -->
+  <div class="view on" id="viewRead">
+    <div class="wordcard"><div class="kj" id="rLetter">A</div></div>
+    <div class="anslist choices" id="rAns"></div>
+    <div class="msg think" id="rMsg">ただしい よみかたを えらんでね!</div>
+  </div>
+
+  <!-- ===== 大文字・小文字 ===== -->
+  <div class="view" id="viewCase">
+    <div class="wordcard"><div class="kj" id="cLetter">A</div><div class="caseHint" id="cHint">おなじ なかまは どっち？</div></div>
+    <div class="anslist choices" id="cAns"></div>
+    <div class="msg think" id="cMsg">おなじ アルファベットを えらんでね!</div>
+  </div>
+
+  <!-- ===== じゅんばん ===== -->
+  <div class="view" id="viewOrder">
+    <div class="card">
+      <div class="order-grid" id="orderGrid"></div>
+    </div>
+    <div class="msg think" id="oMsg">はじめの もじから じゅんばんに タップしてね!</div>
+  </div>
+</div>
+
+<div class="reward" id="reward" style="display:none">
+  <div class="rewardcard">
+    <div class="big" id="rEmoji">🏆</div>
+    <h2 id="rTitle">クリア!</h2>
+    <div class="rstars" id="rStars"></div>
+    <div class="rtotal" id="rTotal"></div>
+    <div class="rmsg" id="rMsgFinal"></div>
+    <button id="againBtn">もういちど あそぶ ▶</button>
+  </div>
+</div>
+
+<div class="zukan" id="zukan" style="display:none">
+  <div class="zukancard">
+    <h2>🏅 バッジずかん</h2>
+    <div class="znext" id="znext"></div>
+    <div class="zbar"><div id="zbarFill" style="width:0%"></div></div>
+    <div class="zgrid" id="zgrid"></div>
+    <button class="zclose" id="zClose">とじる</button>
+  </div>
+</div>
+
+<div class="unlock" id="unlock" style="display:none">
+  <div class="unlockcard">
+    <div class="ue" id="uEmoji">🏅</div>
+    <h3>バッジ ゲット!</h3>
+    <div class="un" id="uName"></div>
+    <button id="uClose">やったー!</button>
+  </div>
+</div>
+
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+
+/* ================= アルファベットデータ ================= */
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+const READINGS = {
+  A:'エー',B:'ビー',C:'シー',D:'ディー',E:'イー',F:'エフ',G:'ジー',H:'エイチ',I:'アイ',J:'ジェー',
+  K:'ケー',L:'エル',M:'エム',N:'エヌ',O:'オー',P:'ピー',Q:'キュー',R:'アール',S:'エス',T:'ティー',
+  U:'ユー',V:'ブイ',W:'ダブリュー',X:'エックス',Y:'ワイ',Z:'ゼット',
+};
+const LEVELS = { 1: LETTERS.slice(0,13), 2: LETTERS };
+
+/* ---------- sound ---------- */
+let actx=null, muted=false;
+function audio(){
+  if(muted)return null;
+  if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}
+  if(actx.state==='suspended')actx.resume();
+  return actx;
+}
+function tone(freq,t0,len,type='sine',vol=0.18){
+  const ac=audio();if(!ac)return;
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.type=type;o.frequency.value=freq;
+  const s=ac.currentTime+t0;
+  g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(vol,s+0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001,s+len);
+  o.connect(g);g.connect(ac.destination);o.start(s);o.stop(s+len+0.05);
+}
+const sRight  =()=>{tone(784,0,.15,'sine',.25);tone(1175,.14,.35,'sine',.25);};
+const sOops   =()=>{tone(330,0,.18,'sine',.13);};
+const sFanfare=()=>{[523,659,784,1047].forEach((f,i)=>tone(f,i*.14,.32,'sine',.22));tone(1319,.6,.5,'sine',.22);};
+
+/* ---------- helpers ---------- */
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+
+/* ---------- state ---------- */
+let level=1, mode='read', stars=0, sessionStars=0;
+
+/* ---------- badges ---------- */
+const BADGES=[
+  {n:10, e:'🥚',name:'ABCの たまご'},
+  {n:25, e:'🔤',name:'アルファベット キッズ'},
+  {n:50, e:'🥉',name:'どうメダル'},
+  {n:80, e:'🥈',name:'ぎんメダル'},
+  {n:120,e:'🥇',name:'きんメダル'},
+  {n:180,e:'💎',name:'ダイヤの えんぴつ'},
+  {n:250,e:'🦉',name:'えいごの ふくろう'},
+  {n:350,e:'🎓',name:'ABC きゅう'},
+  {n:450,e:'📖',name:'えいご はかせ'},
+  {n:600,e:'🏆',name:'アルファベット マスター'},
+];
+const unlockedCount=s=>BADGES.filter(b=>s>=b.n).length;
+async function saveStars(){try{if(window.storage)await window.storage.set('english-stars',String(stars));}catch(e){}}
+async function loadStars(){
+  try{if(window.storage){const r=await window.storage.get('english-stars');if(r&&r.value)stars=parseInt(r.value)||0;}}catch(e){}
+  $('stars').textContent=stars;
+}
+function renderZukan(){
+  const g=$('zgrid');g.replaceChildren();
+  BADGES.forEach(b=>{
+    const got=stars>=b.n,d=document.createElement('div');
+    d.className='badge'+(got?'':' locked');
+    d.innerHTML=`<div class="be">${got?b.e:'❔'}</div><div class="bn">${got?b.name:'? ? ?'}</div><div class="bt">⭐${b.n}</div>`;
+    g.appendChild(d);
+  });
+  const next=BADGES.find(b=>stars<b.n);
+  if(next){
+    const prev=[...BADGES].reverse().find(b=>stars>=b.n);
+    const base=prev?prev.n:0;
+    $('znext').textContent=`つぎのバッジまで あと⭐${next.n-stars}こ!`;
+    $('zbarFill').style.width=Math.min(100,(stars-base)/(next.n-base)*100)+'%';
+  }else{$('znext').textContent='ぜんぶ あつめた!🎉';$('zbarFill').style.width='100%';}
+}
+function showUnlock(b){$('uEmoji').textContent=b.e;$('uName').textContent=b.name;$('unlock').style.display='flex';sFanfare();confetti(40);}
+function gainStars(gain){
+  const before=unlockedCount(stars);
+  stars+=gain;sessionStars+=gain;$('stars').textContent=stars;saveStars();
+  if(unlockedCount(stars)>before){const b=BADGES[unlockedCount(stars)-1];setTimeout(()=>showUnlock(b),900);}
+}
+
+/* ---------- confetti ---------- */
+function confetti(n){
+  const colors=['#FFB49B','#8FC5F5','#FFDE8E','#9CE3C9','#CBB9F2'];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');c.className='confetti';
+    c.style.left=Math.random()*100+'vw';c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDuration=(1.4+Math.random()*1.2)+'s';c.style.animationDelay=(Math.random()*.4)+'s';
+    document.body.appendChild(c);setTimeout(()=>c.remove(),3400);
+  }
+}
+
+/* ---------- shared progress dots ---------- */
+function buildDots(n){
+  const box=$('dots');box.replaceChildren();
+  for(let i=0;i<n;i++){const d=document.createElement('div');d.className='dot';box.appendChild(d);}
+}
+function markDot(idx,gain){
+  const d=document.querySelectorAll('.dot')[idx];if(!d)return;
+  d.classList.remove('now');
+  d.classList.add(gain>=3?'got3':gain>=2?'got2':'got1');
+  d.textContent='⭐';
+}
+function setNowDot(idx){document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('now',i===idx));}
+function updateMiss(n){$('missCount').textContent=n>0?`まちがい: ${n}かい`:'';}
+
+function showReward(title,msgGood){
+  const max=(mode==='order')?5*3:8;
+  let emoji,msg;
+  if(sessionStars>=max*0.9){emoji='🏆';msg=msgGood;}
+  else if(sessionStars>=max*0.6){emoji='🌟';msg='ABC、じょうずだね!';}
+  else{emoji='💪';msg='なんどもやると もっと おぼえられるよ!';}
+  $('rEmoji').textContent=emoji;$('rTitle').textContent=title;
+  $('rStars').textContent=`⭐×${sessionStars} ゲット!`;$('rTotal').textContent=`ぜんぶで ⭐${stars}こ`;
+  $('rMsgFinal').textContent=msg;$('reward').style.display='flex';sFanfare();confetti(60);
+}
+
+/* ================= よみかたクイズ ================= */
+const READ_LEN=8;
+let rQueue=[],rIdx=0,rLocked=false;
+
+function startRead(){
+  const pool=shuffle(LEVELS[level]);
+  rQueue=pool.slice(0,READ_LEN);
+  rIdx=0;sessionStars=0;
+  buildDots(READ_LEN);updateMiss(0);
+  $('reward').style.display='none';
+  nextRead();
+}
+function nextRead(){
+  if(rIdx>=rQueue.length){showReward('よみかた クリア!','ぜんぶ ただしく よめたね! さすが!');return;}
+  $('pcount').textContent=`${rIdx+1}/${READ_LEN}`;
+  setNowDot(rIdx);
+  rLocked=false;
+  const letter=rQueue[rIdx];
+  $('rLetter').textContent=Math.random()<0.5?letter:letter.toLowerCase();
+  $('rMsg').textContent='ただしい よみかたを えらんでね!';
+  $('rMsg').className='msg think';
+
+  const correct=READINGS[letter];
+  const others=shuffle(LETTERS.filter(l=>l!==letter)).slice(0,3).map(l=>READINGS[l]);
+  const opts=shuffle([correct,...others]);
+  const box=$('rAns');box.replaceChildren();
+  opts.forEach(opt=>{
+    const b=document.createElement('button');
+    b.className='ansbtn';b.textContent=opt;
+    b.onclick=()=>answerRead(b,opt,correct);
+    box.appendChild(b);
+  });
+}
+function answerRead(btn,chosen,correct){
+  if(rLocked)return;rLocked=true;
+  document.querySelectorAll('#rAns .ansbtn').forEach(b=>b.disabled=true);
+  if(chosen===correct){
+    btn.classList.add('correct');
+    gainStars(1);markDot(rIdx,3);
+    $('rMsg').textContent='せいかい! よくできました!';$('rMsg').className='msg good';
+    sRight();confetti(20);
+  }else{
+    btn.classList.add('wrong');
+    document.querySelectorAll('#rAns .ansbtn').forEach(b=>{if(b.textContent===correct)b.classList.add('correct');});
+    markDot(rIdx,1);
+    $('rMsg').textContent=`おしい! ただしくは「${correct}」だよ`;$('rMsg').className='msg oops';
+    sOops();
+  }
+  rIdx++;
+  setTimeout(nextRead,1100);
+}
+
+/* ================= 大文字・小文字 ================= */
+const CASE_LEN=8;
+let cQueue=[],cIdx=0,cLocked=false;
+
+function startCase(){
+  const pool=shuffle(LEVELS[level]);
+  cQueue=pool.slice(0,CASE_LEN);
+  cIdx=0;sessionStars=0;
+  buildDots(CASE_LEN);updateMiss(0);
+  $('reward').style.display='none';
+  nextCase();
+}
+function nextCase(){
+  if(cIdx>=cQueue.length){showReward('大文字小文字 クリア!','おなじ なかまが ぜんぶ わかったね!');return;}
+  $('pcount').textContent=`${cIdx+1}/${CASE_LEN}`;
+  setNowDot(cIdx);
+  cLocked=false;
+  const letter=cQueue[cIdx];
+  const askUpper=Math.random()<0.5;
+  $('cLetter').textContent=askUpper?letter:letter.toLowerCase();
+  $('cHint').textContent=askUpper?'おなじ アルファベットの 小文字は どれ？':'おなじ アルファベットの 大文字は どれ？';
+  $('cMsg').textContent='おなじ アルファベットを えらんでね!';
+  $('cMsg').className='msg think';
+
+  const correct=askUpper?letter.toLowerCase():letter;
+  const others=shuffle(LETTERS.filter(l=>l!==letter)).slice(0,3).map(l=>askUpper?l.toLowerCase():l);
+  const opts=shuffle([correct,...others]);
+  const box=$('cAns');box.replaceChildren();
+  opts.forEach(opt=>{
+    const b=document.createElement('button');
+    b.className='ansbtn';b.textContent=opt;
+    b.onclick=()=>answerCase(b,opt,correct);
+    box.appendChild(b);
+  });
+}
+function answerCase(btn,chosen,correct){
+  if(cLocked)return;cLocked=true;
+  document.querySelectorAll('#cAns .ansbtn').forEach(b=>b.disabled=true);
+  if(chosen===correct){
+    btn.classList.add('correct');
+    gainStars(1);markDot(cIdx,3);
+    $('cMsg').textContent='せいかい! よくできました!';$('cMsg').className='msg good';
+    sRight();confetti(20);
+  }else{
+    btn.classList.add('wrong');
+    document.querySelectorAll('#cAns .ansbtn').forEach(b=>{if(b.textContent===correct)b.classList.add('correct');});
+    markDot(cIdx,1);
+    $('cMsg').textContent=`おしい! ただしくは「${correct}」だよ`;$('cMsg').className='msg oops';
+    sOops();
+  }
+  cIdx++;
+  setTimeout(nextCase,1100);
+}
+
+/* ================= じゅんばん ================= */
+const ORDER_ROUNDS=5, ORDER_WINDOW=5;
+let oRound=0,oTarget=[],oNextIdx=0,oMisses=0;
+
+function startOrder(){
+  oRound=0;sessionStars=0;
+  buildDots(ORDER_ROUNDS);
+  $('reward').style.display='none';
+  nextOrderRound();
+}
+function nextOrderRound(){
+  oRound++;
+  if(oRound>ORDER_ROUNDS){showReward('じゅんばん クリア!','ぜんぶ じゅんばんに できたね! すごい!');return;}
+  $('pcount').textContent=`${oRound}/${ORDER_ROUNDS}`;
+  setNowDot(oRound-1);
+  oMisses=0;updateMiss(0);
+  const pool=LEVELS[level];
+  const maxStart=pool.length-ORDER_WINDOW;
+  const start=Math.floor(Math.random()*(maxStart+1));
+  oTarget=pool.slice(start,start+ORDER_WINDOW);
+  oNextIdx=0;
+  $('oMsg').textContent=`さいしょは「${oTarget[0]}」だよ! じゅんばんに タップしてね`;
+  $('oMsg').className='msg think';
+  const box=$('orderGrid');box.replaceChildren();
+  shuffle(oTarget).forEach(letter=>{
+    const b=document.createElement('button');
+    b.className='obtn';b.textContent=letter;
+    b.onclick=()=>tapOrder(b,letter);
+    box.appendChild(b);
+  });
+}
+function tapOrder(btn,letter){
+  if(btn.disabled)return;
+  if(letter===oTarget[oNextIdx]){
+    btn.classList.add('done');btn.disabled=true;
+    sRight();
+    oNextIdx++;
+    if(oNextIdx>=oTarget.length){
+      const gain=oMisses===0?3:oMisses<=2?2:1;
+      gainStars(gain);markDot(oRound-1,gain);
+      $('oMsg').textContent=oMisses===0?'パーフェクト! じゅんばん ばっちり!⭐⭐⭐':'できた! ⭐';
+      $('oMsg').className='msg good';
+      confetti(oMisses===0?50:28);
+      setTimeout(nextOrderRound,1200);
+    }else{
+      $('oMsg').textContent=`つぎは「${oTarget[oNextIdx]}」だよ!`;
+    }
+  }else{
+    oMisses++;updateMiss(oMisses);
+    btn.classList.add('wrong');sOops();
+    setTimeout(()=>btn.classList.remove('wrong'),400);
+  }
+}
+
+/* ================= level / mode switching ================= */
+function startMode(){
+  if(mode==='read')startRead();
+  else if(mode==='case')startCase();
+  else if(mode==='order')startOrder();
+}
+document.querySelectorAll('#levels .lv').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#levels .lv').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');level=+b.dataset.lv;startMode();
+});
+document.querySelectorAll('#modes .tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#modes .tab').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');mode=b.dataset.m;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  $('view'+mode[0].toUpperCase()+mode.slice(1)).classList.add('on');
+  $('missCount').textContent='';
+  startMode();
+});
+
+$('againBtn').onclick=startMode;
+$('starsPill').onclick=()=>{renderZukan();$('zukan').style.display='flex';};
+$('zClose').onclick=()=>$('zukan').style.display='none';
+$('zukan').onclick=e=>{if(e.target.id==='zukan')$('zukan').style.display='none';};
+$('uClose').onclick=()=>$('unlock').style.display='none';
+
+loadStars().finally(startMode);
+})();
+</script>
+</body>
+</html>

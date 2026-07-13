@@ -17,7 +17,6 @@
   box-shadow:var(--shadow-md); margin-bottom:12px;}
 .wordcard .kj{font-size:clamp(40px,13vw,60px); font-weight:900; letter-spacing:.04em; color:var(--ink); line-height:1.2;}
 .anslist{display:flex; flex-direction:column; gap:10px;}
-.ansbtn.correct{background:linear-gradient(160deg, var(--mint), var(--mint-d)); color:#fff;}
 .ansbtn.wrong{background:#FFE2DA; color:var(--on-coral);}
 
 /* ---------- なぞりがき（このページ固有） ---------- */
@@ -35,6 +34,8 @@
     <h1>🈴 かんじクイズ</h1>
     <div class="stars" id="starsPill">⭐<b id="stars">0</b><span class="hint">📖</span></div>
   </div>
+
+  <div class="mascot-guide" aria-label="おうえんキャラクター"><span class="mascot-face">🐼</span><span>ゆっくりで だいじょうぶ！<br><b>いっしょに やってみよう</b></span></div>
 
   <div class="levels" id="grades">
     <button class="lv on" data-g="1">1年生<small>やさしい</small></button>
@@ -325,7 +326,7 @@ function answerRead(btn,chosen,correct){
 
 /* ================= かんじさがし ================= */
 const PUZZLES=5, ROWS=6, COLS=6;
-const FOUND_COLORS=['#FFB49B','#8FC5F5','#9CE3C9','#CBB9F2','#E3A93D'];
+const FOUND_COLORS=['#B04F2C','#215D97','#187A51','#6A4AB0','#8C6400'];
 let grid=[], placed=[], sPnum=0, sMisses=0, dragStart=null, dragEnd=null;
 const KANJI_FILL=[...GRADE1_CHARS,...GRADE2_CHARS];
 
