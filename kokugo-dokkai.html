@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ものがたり どっかいクイズ</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<style>
+/* ---------- おはなしカード（このページ固有） ---------- */
+.story-card{background:var(--card); border-radius:var(--radius-card); padding:22px 18px; box-shadow:var(--shadow-md); margin-bottom:10px;}
+.story-card .stext{font-size:16px; line-height:2; font-weight:900; color:var(--ink);}
+.qline{text-align:center; font-size:15px; font-weight:900; color:var(--blue-d); margin:0 0 10px;
+  background:rgba(255,255,255,.75); border-radius:var(--radius-card-sm); padding:10px 14px;}
+</style>
+</head>
+<body>
+<div class="sky-layer" aria-hidden="true"><div class="cloud c1"></div><div class="cloud c2"></div><div class="deco-star s1">&#10022;</div><div class="deco-heart h1">&#9825;</div></div>
+<div class="app">
+  <div class="top">
+    <a href="index.html" class="home" title="もくじへ">🏠</a>
+    <h1>📖 ものがたり どっかいクイズ</h1>
+    <div class="stars" id="starsPill">⭐<b id="stars">0</b><span class="hint">📖ずかん</span></div>
+  </div>
+
+  <div class="mascot-guide" aria-label="おうえんキャラクター"><span class="mascot-face">🐨</span><span>ゆっくりで だいじょうぶ！<br><b>おはなしを よく よんでみよう</b></span></div>
+
+  <div class="progressrow">
+    <div class="pcount" id="pcount">もんだい 1/8</div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="story-card"><div class="stext" id="storyText"></div></div>
+  <div class="qline" id="qLine"></div>
+
+  <div class="choices" id="choices"></div>
+  <div class="msg think" id="msg"></div>
+
+  <div class="actions">
+    <button class="act icon" id="soundBtn" title="おと">🔊</button>
+    <div class="spacer"></div>
+    <button class="act primary" id="nextBtn" style="display:none">つぎの もんだい ➡</button>
+  </div>
+</div>
+
+<div class="reward" id="reward" style="display:none">
+  <div class="rewardcard">
+    <div class="big" id="rEmoji">🏆</div>
+    <h2 id="rTitle">クリア!</h2>
+    <div class="rstars" id="rStars"></div>
+    <div class="rtotal" id="rTotal"></div>
+    <div class="rmsg" id="rMsg"></div>
+    <button id="againBtn">もういちど あそぶ ▶</button>
+  </div>
+</div>
+
+<div class="zukan" id="zukan" style="display:none">
+  <div class="zukancard">
+    <h2>🏅 バッジずかん</h2>
+    <div class="znext" id="znext"></div>
+    <div class="zbar"><div id="zbarFill" style="width:0%"></div></div>
+    <div class="zgrid" id="zgrid"></div>
+    <button class="zclose" id="zClose">とじる</button>
+  </div>
+</div>
+
+<div class="unlock" id="unlock" style="display:none">
+  <div class="unlockcard">
+    <div class="ue" id="uEmoji">🏅</div>
+    <h3>バッジ ゲット!</h3>
+    <div class="un" id="uName"></div>
+    <button id="uClose">やったー!</button>
+  </div>
+</div>
+
+<script>
+(() => {
+const QUESTIONS = 8;
+const $=id=>document.getElementById(id);
+
+/* ---------- おはなしデータ ---------- */
+const STORIES=[
+  {t:'うさぎの うさこさんは、こうえんで ボールを けりました。ボールは たかく とびました。うさこさんは にっこり わらいました。',
+   qs:[
+     {q:'だれが でてきましたか？',choices:['うさこさん','くまさん','ねこさん'],ans:'うさこさん'},
+     {q:'うさこさんは なにを しましたか？',choices:['ボールを けった','なわとびを した','うたを うたった'],ans:'ボールを けった'},
+   ]},
+  {t:'くまくんは あさ おきて、パンを たべました。それから がっこうへ いきました。とても げんきです。',
+   qs:[
+     {q:'くまくんは あさ なにを たべましたか？',choices:['パン','ごはん','りんご'],ans:'パン'},
+     {q:'くまくんは たべたあと どこへ いきましたか？',choices:['がっこう','こうえん','おうち'],ans:'がっこう'},
+   ]},
+  {t:'ねこの みけちゃんは、あめが ふって いたので、おうちの なかで まるくなって ねむりました。',
+   qs:[
+     {q:'そとの てんきは どうでしたか？',choices:['あめ','はれ','ゆき'],ans:'あめ'},
+     {q:'みけちゃんは どこで ねむりましたか？',choices:['おうちの なか','こうえん','がっこう'],ans:'おうちの なか'},
+   ]},
+  {t:'ぞうさんと きりんさんは、いっしょに おおきな すいかを たべました。とても あまくて おいしかったです。',
+   qs:[
+     {q:'だれと だれが でてきましたか？',choices:['ぞうさんと きりんさん','うさぎさんと くまさん','ねこさんと いぬさん'],ans:'ぞうさんと きりんさん'},
+     {q:'ふたりは なにを たべましたか？',choices:['すいか','りんご','ばなな'],ans:'すいか'},
+   ]},
+  {t:'たろうくんは かぜが つよかったので、ぼうしを おさえながら あるきました。ぼうしは とびませんでした。',
+   qs:[
+     {q:'そとの てんきは どうでしたか？',choices:['かぜが つよかった','あめが ふった','とても あつかった'],ans:'かぜが つよかった'},
+     {q:'たろうくんは なにを おさえましたか？',choices:['ぼうし','かばん','かさ'],ans:'ぼうし'},
+   ]},
+  {t:'うみで さかなが たくさん およいで いました。あかい さかなと あおい さかなが いました。',
+   qs:[
+     {q:'どこの おはなしですか？',choices:['うみ','やま','こうえん'],ans:'うみ'},
+     {q:'さかなの いろは なにいろと なにいろでしたか？',choices:['あかと あお','きいろと みどり','しろと くろ'],ans:'あかと あお'},
+   ]},
+  {t:'ゆきちゃんは おかあさんと いっしょに クッキーを つくりました。あまくて おいしい クッキーが できました。',
+   qs:[
+     {q:'だれと クッキーを つくりましたか？',choices:['おかあさん','おとうさん','おばあちゃん'],ans:'おかあさん'},
+     {q:'なにを つくりましたか？',choices:['クッキー','ケーキ','パン'],ans:'クッキー'},
+   ]},
+  {t:'いぬの ぽちは、ボールを おいかけて はしりました。とても はやく はしりました。',
+   qs:[
+     {q:'だれが はしりましたか？',choices:['ぽち','たろうくん','ねこ'],ans:'ぽち'},
+     {q:'ぽちは なにを おいかけましたか？',choices:['ボール','チョウチョ','じてんしゃ'],ans:'ボール'},
+   ]},
+  {t:'よるに なると、そらに たくさんの ほしが ひかりました。つきも まるくて きれいでした。',
+   qs:[
+     {q:'いつの おはなしですか？',choices:['よる','あさ','ひるま'],ans:'よる'},
+     {q:'そらに なにが ひかって いましたか？',choices:['ほし','たいよう','はなび'],ans:'ほし'},
+   ]},
+  {t:'とりさんたちは、きの うえで うたを うたいました。みんな とても じょうずでした。',
+   qs:[
+     {q:'どこで うたを うたいましたか？',choices:['きの うえ','こうえん','うみの なか'],ans:'きの うえ'},
+     {q:'だれが うたいましたか？',choices:['とりさんたち','うさぎさんたち','さかなさんたち'],ans:'とりさんたち'},
+   ]},
+];
+const POOL=[];
+STORIES.forEach(s=>s.qs.forEach(q=>POOL.push({storyText:s.t,q:q.q,choices:q.choices,ans:q.ans})));
+
+/* ---------- sound ---------- */
+let actx=null, muted=false;
+function audio(){
+  if(muted)return null;
+  if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}
+  if(actx.state==='suspended')actx.resume();
+  return actx;
+}
+function tone(freq,t0,len,type='sine',vol=0.18){
+  const ac=audio();if(!ac)return;
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.type=type;o.frequency.value=freq;
+  const s=ac.currentTime+t0;
+  g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(vol,s+0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001,s+len);
+  o.connect(g);g.connect(ac.destination);o.start(s);o.stop(s+len+0.05);
+}
+const sRight  =()=>{tone(784,0,.15,'sine',.25);tone(1175,.14,.35,'sine',.25);};
+const sOops   =()=>{tone(330,0,.2,'sine',.14);tone(294,.18,.3,'sine',.12);};
+const sPick   =()=>tone(600,0,.08,'triangle',.12);
+const sFanfare=()=>{[523,659,784,1047].forEach((f,i)=>tone(f,i*.14,.32,'sine',.22));tone(1319,.6,.5,'sine',.22);};
+
+/* ---------- helpers ---------- */
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+
+/* ---------- badges ---------- */
+const BADGES=[
+  {n:10, e:'📖',name:'どっかいの たまご'},
+  {n:25, e:'📗',name:'ものがたり キッズ'},
+  {n:50, e:'🥉',name:'どうメダル'},
+  {n:80, e:'🥈',name:'ぎんメダル'},
+  {n:120,e:'🥇',name:'きんメダル'},
+  {n:180,e:'💎',name:'ダイヤの ほんだな'},
+  {n:250,e:'🦉',name:'どっかい ふくろう'},
+  {n:350,e:'🧠',name:'はかせ きゅう'},
+  {n:450,e:'👑',name:'ものがたりの おうさま'},
+  {n:600,e:'🏆',name:'どっかい マスター'},
+];
+let stars=0;
+const unlockedCount=s=>BADGES.filter(b=>s>=b.n).length;
+async function saveStars(){try{if(window.storage)await window.storage.set('kokugo-dokkai-stars',String(stars));}catch(e){}}
+async function loadStars(){
+  try{if(window.storage){const r=await window.storage.get('kokugo-dokkai-stars');if(r&&r.value)stars=parseInt(r.value)||0;}}catch(e){}
+  $('stars').textContent=stars;
+}
+function renderZukan(){
+  const g=$('zgrid');g.replaceChildren();
+  BADGES.forEach(b=>{
+    const got=stars>=b.n,d=document.createElement('div');
+    d.className='badge'+(got?'':' locked');
+    d.innerHTML=`<div class="be">${got?b.e:'❔'}</div><div class="bn">${got?b.name:'? ? ?'}</div><div class="bt">⭐${b.n}</div>`;
+    g.appendChild(d);
+  });
+  const next=BADGES.find(b=>stars<b.n);
+  if(next){
+    const prev=[...BADGES].reverse().find(b=>stars>=b.n);
+    const base=prev?prev.n:0;
+    $('znext').textContent=`つぎのバッジまで あと⭐${next.n-stars}こ!`;
+    $('zbarFill').style.width=Math.min(100,(stars-base)/(next.n-base)*100)+'%';
+  }else{$('znext').textContent='ぜんぶ あつめた!🎉';$('zbarFill').style.width='100%';}
+}
+function showUnlock(b){$('uEmoji').textContent=b.e;$('uName').textContent=b.name;$('unlock').style.display='flex';sFanfare();confetti(40);}
+function gainStars(gain){
+  const before=unlockedCount(stars);
+  stars+=gain;sessionStars+=gain;$('stars').textContent=stars;saveStars();
+  if(unlockedCount(stars)>before){const b=BADGES[unlockedCount(stars)-1];setTimeout(()=>showUnlock(b),900);}
+}
+
+/* ---------- state ---------- */
+let queue=[],curItem=null,answered=false;
+let qNum=0,sessionStars=0;
+
+/* ---------- session ---------- */
+function buildDots(){
+  const box=$('dots');box.replaceChildren();
+  for(let i=0;i<QUESTIONS;i++){const d=document.createElement('div');d.className='dot';box.appendChild(d);}
+}
+function startSession(){
+  queue=shuffle(POOL).slice(0,QUESTIONS);
+  qNum=0;sessionStars=0;buildDots();$('reward').style.display='none';
+  nextQuestion();
+}
+function nextQuestion(){
+  qNum++;
+  $('pcount').textContent=`もんだい ${qNum}/${QUESTIONS}`;
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('now',i===qNum-1));
+  showQuestion();
+}
+function markDot(gain){
+  const d=document.querySelectorAll('.dot')[qNum-1];if(!d)return;
+  d.classList.remove('now');d.classList.add(gain>=2?'got2':'got1');d.textContent='⭐';
+}
+function showReward(){
+  const max=QUESTIONS*2;
+  let emoji,title,msg;
+  if(sessionStars>=max){emoji='🏆';title='パーフェクト!';msg='おはなしの ないよう、ばっちり わかったね!';}
+  else if(sessionStars>=max*.7){emoji='🌟';title='すごい!クリア!';msg='どっかいが どんどん とくいに なってるよ!';}
+  else{emoji='💪';title='がんばった!';msg='なんどもやると もっと よめるように なるよ!';}
+  $('rEmoji').textContent=emoji;$('rTitle').textContent=title;
+  $('rStars').textContent=`⭐×${sessionStars} ゲット!`;$('rTotal').textContent=`ぜんぶで ⭐${stars}こ`;
+  $('rMsg').textContent=msg;$('reward').style.display='flex';sFanfare();confetti(60);
+}
+
+/* ---------- render ---------- */
+function showQuestion(){
+  curItem=queue[qNum-1];answered=false;
+  $('storyText').textContent=curItem.storyText;
+  $('qLine').textContent=curItem.q;
+  $('msg').textContent='';$('msg').className='msg think';
+  $('nextBtn').style.display='none';
+  const box=$('choices');box.replaceChildren();
+  shuffle(curItem.choices).forEach(v=>{
+    const b=document.createElement('button');
+    b.className='choice';b.textContent=v;
+    b.onclick=()=>pickAnswer(b,v);
+    box.appendChild(b);
+  });
+}
+function pickAnswer(btn,val){
+  if(answered)return;
+  answered=true;audio();sPick();
+  btn.classList.add('picked');
+  document.querySelectorAll('.choice').forEach(b=>b.disabled=true);
+  const ok=val===curItem.ans;
+  document.querySelectorAll('.choice').forEach(b=>{
+    if(b.textContent===curItem.ans)b.classList.add('right');
+    else if(b===btn)b.classList.add('wrong');
+  });
+  const gain=ok?2:1;
+  if(ok){sRight();$('msg').textContent='せいかい! ⭐+2';$('msg').className='msg good';confetti(22);}
+  else{sOops();$('msg').textContent=`こたえは「${curItem.ans}」だったよ! ⭐+1`;$('msg').className='msg oops';}
+  gainStars(gain);markDot(gain);
+  $('nextBtn').textContent=qNum>=QUESTIONS?'🎉 けっかを みる!':'つぎの もんだい ➡';
+  $('nextBtn').style.display='';
+}
+
+/* ---------- confetti ---------- */
+function confetti(n){
+  const colors=['#FFB49B','#8FC5F5','#FFDE8E','#9CE3C9','#CBB9F2'];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');c.className='confetti';
+    c.style.left=Math.random()*100+'vw';c.style.background=rnd(colors);
+    c.style.animationDuration=(1.4+Math.random()*1.2)+'s';c.style.animationDelay=(Math.random()*.4)+'s';
+    document.body.appendChild(c);setTimeout(()=>c.remove(),3400);
+  }
+}
+
+/* ---------- wiring ---------- */
+$('nextBtn').onclick=()=>{if(qNum>=QUESTIONS)showReward();else nextQuestion();};
+$('againBtn').onclick=startSession;
+$('soundBtn').onclick=()=>{
+  muted=!muted;$('soundBtn').textContent=muted?'🔇':'🔊';
+  $('soundBtn').classList.toggle('on',muted);if(!muted){audio();sPick();}
+};
+$('starsPill').onclick=()=>{renderZukan();$('zukan').style.display='flex';};
+$('zClose').onclick=()=>$('zukan').style.display='none';
+$('zukan').onclick=e=>{if(e.target.id==='zukan')$('zukan').style.display='none';};
+$('uClose').onclick=()=>$('unlock').style.display='none';
+
+loadStars().finally(startSession);
+})();
+</script>
+</body>
+</html>

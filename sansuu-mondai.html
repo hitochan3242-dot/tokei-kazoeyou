@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>さんすうの ぶんしょうもんだい</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<style>
+/* ---------- もんだいカード（このページ固有） ---------- */
+.qcard{background:var(--card); border-radius:var(--radius-card); padding:26px 20px; text-align:center; box-shadow:var(--shadow-md);}
+.qcard .qicon{font-size:38px; margin-bottom:10px; line-height:1;}
+.qcard .qtext{font-size:16.5px; line-height:1.9; font-weight:900; color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="sky-layer" aria-hidden="true"><div class="cloud c1"></div><div class="cloud c2"></div><div class="deco-star s1">&#10022;</div><div class="deco-heart h1">&#9825;</div></div>
+<div class="app">
+  <div class="top">
+    <a href="index.html" class="home" title="もくじへ">🏠</a>
+    <h1>📘 さんすうの ぶんしょうもんだい</h1>
+    <div class="stars" id="starsPill">⭐<b id="stars">0</b><span class="hint">📖ずかん</span></div>
+  </div>
+
+  <div class="mascot-guide" aria-label="おうえんキャラクター"><span class="mascot-face">🐹</span><span>ゆっくりで だいじょうぶ！<br><b>もんだいを よく よんでみよう</b></span></div>
+
+  <div class="levels">
+    <button class="lv on" data-lv="1">レベル1<small>たし算・ひき算</small></button>
+    <button class="lv" data-lv="2">レベル2<small>くり上がり・くらべる</small></button>
+    <button class="lv" data-lv="3">レベル3<small>かけ算</small></button>
+  </div>
+
+  <div class="progressrow">
+    <div class="pcount" id="pcount">もんだい 1/8</div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="qcard">
+    <div class="qicon" id="qIcon">🍎</div>
+    <div class="qtext" id="qText"></div>
+  </div>
+
+  <div class="choices" id="choices"></div>
+  <div class="msg think" id="msg"></div>
+
+  <div class="actions">
+    <button class="act icon" id="soundBtn" title="おと">🔊</button>
+    <div class="spacer"></div>
+    <button class="act primary" id="nextBtn" style="display:none">つぎの もんだい ➡</button>
+  </div>
+</div>
+
+<div class="reward" id="reward" style="display:none">
+  <div class="rewardcard">
+    <div class="big" id="rEmoji">🏆</div>
+    <h2 id="rTitle">クリア!</h2>
+    <div class="rstars" id="rStars"></div>
+    <div class="rtotal" id="rTotal"></div>
+    <div class="rmsg" id="rMsg"></div>
+    <button id="againBtn">もういちど あそぶ ▶</button>
+  </div>
+</div>
+
+<div class="zukan" id="zukan" style="display:none">
+  <div class="zukancard">
+    <h2>🏅 バッジずかん</h2>
+    <div class="znext" id="znext"></div>
+    <div class="zbar"><div id="zbarFill" style="width:0%"></div></div>
+    <div class="zgrid" id="zgrid"></div>
+    <button class="zclose" id="zClose">とじる</button>
+  </div>
+</div>
+
+<div class="unlock" id="unlock" style="display:none">
+  <div class="unlockcard">
+    <div class="ue" id="uEmoji">🏅</div>
+    <h3>バッジ ゲット!</h3>
+    <div class="un" id="uName"></div>
+    <button id="uClose">やったー!</button>
+  </div>
+</div>
+
+<script>
+(() => {
+const QUESTIONS = 8;
+const $=id=>document.getElementById(id);
+
+/* ---------- sound ---------- */
+let actx=null, muted=false;
+function audio(){
+  if(muted)return null;
+  if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}
+  if(actx.state==='suspended')actx.resume();
+  return actx;
+}
+function tone(freq,t0,len,type='sine',vol=0.18){
+  const ac=audio();if(!ac)return;
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.type=type;o.frequency.value=freq;
+  const s=ac.currentTime+t0;
+  g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(vol,s+0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001,s+len);
+  o.connect(g);g.connect(ac.destination);o.start(s);o.stop(s+len+0.05);
+}
+const sRight  =()=>{tone(784,0,.15,'sine',.25);tone(1175,.14,.35,'sine',.25);};
+const sOops   =()=>{tone(330,0,.2,'sine',.14);tone(294,.18,.3,'sine',.12);};
+const sPick   =()=>tone(600,0,.08,'triangle',.12);
+const sFanfare=()=>{[523,659,784,1047].forEach((f,i)=>tone(f,i*.14,.32,'sine',.22));tone(1319,.6,.5,'sine',.22);};
+
+/* ---------- helpers ---------- */
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const range=(a,b,s=1)=>{const o=[];for(let i=a;i<=b;i+=s)o.push(i);return o;};
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+const phr=(a,b)=>Math.random()<0.5?a:b;
+
+/* ---------- もちものデータ ---------- */
+const ITEMS=[
+  {e:'🍎',n:'りんご',c:'こ'},
+  {e:'🍬',n:'あめ',c:'こ'},
+  {e:'🐶',n:'いぬ',c:'とう'},
+  {e:'🐱',n:'ねこ',c:'ひき'},
+  {e:'🎈',n:'ふうせん',c:'こ'},
+  {e:'✏️',n:'えんぴつ',c:'ほん'},
+  {e:'🐟',n:'さかな',c:'びき'},
+  {e:'🚗',n:'くるま',c:'だい'},
+  {e:'🍪',n:'クッキー',c:'まい'},
+  {e:'🌸',n:'はな',c:'ほん'},
+];
+function pickItem(exclude){
+  let it;
+  do{ it=rnd(ITEMS); }while(exclude&&it.n===exclude.n);
+  return it;
+}
+
+/* ---------- 選択肢づくり ---------- */
+function makeChoices(ans){
+  const set=new Set([ans]);
+  const tries=[ans-1,ans+1,ans-2,ans+2,ans-3,ans+3];
+  for(const t of tries){ if(set.size>=4)break; if(t>0&&!set.has(t)) set.add(t); }
+  let extra=ans+5;
+  while(set.size<4){ if(extra>0&&!set.has(extra)) set.add(extra); extra=extra>ans?ans-4:extra+2; if(extra<=0)extra=ans+7; }
+  return shuffle([...set]);
+}
+
+/* ---------- もんだい生成 ---------- */
+function genAddNoCarry(){
+  const a=rnd(range(1,8)), b=rnd(range(1,9-a));
+  const it=pickItem(), ans=a+b;
+  const text=phr(
+    `${it.n}が ${a}${it.c} ありました。あとから ${b}${it.c} きました。ぜんぶで なん${it.c}に なりましたか？`,
+    `${it.n}が ${a}${it.c}、べつに ${b}${it.c} あります。あわせると なん${it.c}ですか？`
+  );
+  return{icon:it.e,text,ans,opts:makeChoices(ans)};
+}
+function genSubNoCarry(){
+  const a=rnd(range(2,9)), b=rnd(range(1,a-1));
+  const it=pickItem(), ans=a-b;
+  const text=phr(
+    `${it.n}が ${a}${it.c} ありました。${b}${it.c} つかいました。のこりは なん${it.c}ですか？`,
+    `${it.n}が ${a}${it.c} ありました。ともだちに ${b}${it.c} あげました。のこりは なん${it.c}ですか？`
+  );
+  return{icon:it.e,text,ans,opts:makeChoices(ans)};
+}
+function genAddCarry(){
+  let a,b;
+  do{a=rnd(range(3,9));b=rnd(range(3,9));}while(a+b<10||a+b>18);
+  const it=pickItem(), ans=a+b;
+  const text=phr(
+    `${it.n}が ${a}${it.c} ありました。${b}${it.c} ふえました。ぜんぶで なん${it.c}に なりましたか？`,
+    `1にちめに ${it.n}を ${a}${it.c}、2にちめに ${b}${it.c} あつめました。あわせて なん${it.c}ですか？`
+  );
+  return{icon:it.e,text,ans,opts:makeChoices(ans)};
+}
+function genSubBorrow(){
+  const a=rnd(range(11,18)), b=rnd(range(2,9));
+  const it=pickItem(), ans=a-b;
+  const text=phr(
+    `${it.n}が ${a}${it.c} ありました。${b}${it.c} つかいました。のこりは なん${it.c}ですか？`,
+    `${it.n}が ${a}${it.c} ありました。${b}${it.c} なくなりました。のこりは なん${it.c}ですか？`
+  );
+  return{icon:it.e,text,ans,opts:makeChoices(ans)};
+}
+function genCompareWhich(){
+  const itA=pickItem(), itB=pickItem(itA);
+  let a=rnd(range(2,9)), b=rnd(range(2,9));
+  while(a===b) b=rnd(range(2,9));
+  const ans=a>b?itA.n:itB.n;
+  const text=`こうえんに ${itA.n}が ${a}${itA.c}、${itB.n}が ${b}${itB.c} います。おおいのは どちらですか？`;
+  return{icon:'🤔',text,ans,opts:shuffle([itA.n,itB.n])};
+}
+function genCompareDiff(){
+  const itA=pickItem(), itB=pickItem(itA);
+  const a=rnd(range(4,12)), b=rnd(range(1,a-1));
+  const ans=a-b;
+  const text=`${itA.n}が ${a}${itA.c}、${itB.n}が ${b}${itB.c} います。${itA.n}は ${itB.n}より なん${itA.c} おおいですか？`;
+  return{icon:'🤔',text,ans,opts:makeChoices(ans)};
+}
+function genMultiply(){
+  const groups=rnd(range(2,5)), per=rnd(range(2,5));
+  const it=pickItem(), ans=groups*per;
+  const text=phr(
+    `1つの はこに ${it.n}が ${per}${it.c}ずつ 入って います。はこが ${groups}つ あります。ぜんぶで なん${it.c}ですか？`,
+    `${it.n}を ${per}${it.c}ずつ ${groups}にんに くばります。ぜんぶで なん${it.c} ひつようですか？`
+  );
+  return{icon:it.e,text,ans,opts:makeChoices(ans)};
+}
+function makeProblem(level){
+  if(level===1) return rnd([genAddNoCarry,genSubNoCarry])();
+  if(level===2) return rnd([genAddCarry,genSubBorrow,genCompareWhich,genCompareDiff])();
+  return genMultiply();
+}
+
+/* ---------- badges ---------- */
+const BADGES=[
+  {n:10, e:'📘',name:'もんだいの たまご'},
+  {n:25, e:'✏️',name:'ぶんしょうだい キッズ'},
+  {n:50, e:'🥉',name:'どうメダル'},
+  {n:80, e:'🥈',name:'ぎんメダル'},
+  {n:120,e:'🥇',name:'きんメダル'},
+  {n:180,e:'💎',name:'ダイヤの ノート'},
+  {n:250,e:'🚀',name:'ちしき ロケット'},
+  {n:350,e:'🧠',name:'はかせ きゅう'},
+  {n:450,e:'👑',name:'ぶんしょうだいの おうさま'},
+  {n:600,e:'🏆',name:'ぶんしょうだい マスター'},
+];
+let stars=0;
+const unlockedCount=s=>BADGES.filter(b=>s>=b.n).length;
+async function saveStars(){try{if(window.storage)await window.storage.set('sansuu-mondai-stars',String(stars));}catch(e){}}
+async function loadStars(){
+  try{if(window.storage){const r=await window.storage.get('sansuu-mondai-stars');if(r&&r.value)stars=parseInt(r.value)||0;}}catch(e){}
+  $('stars').textContent=stars;
+}
+function renderZukan(){
+  const g=$('zgrid');g.replaceChildren();
+  BADGES.forEach(b=>{
+    const got=stars>=b.n,d=document.createElement('div');
+    d.className='badge'+(got?'':' locked');
+    d.innerHTML=`<div class="be">${got?b.e:'❔'}</div><div class="bn">${got?b.name:'? ? ?'}</div><div class="bt">⭐${b.n}</div>`;
+    g.appendChild(d);
+  });
+  const next=BADGES.find(b=>stars<b.n);
+  if(next){
+    const prev=[...BADGES].reverse().find(b=>stars>=b.n);
+    const base=prev?prev.n:0;
+    $('znext').textContent=`つぎのバッジまで あと⭐${next.n-stars}こ!`;
+    $('zbarFill').style.width=Math.min(100,(stars-base)/(next.n-base)*100)+'%';
+  }else{$('znext').textContent='ぜんぶ あつめた!🎉';$('zbarFill').style.width='100%';}
+}
+function showUnlock(b){$('uEmoji').textContent=b.e;$('uName').textContent=b.name;$('unlock').style.display='flex';sFanfare();confetti(40);}
+function gainStars(gain){
+  const before=unlockedCount(stars);
+  stars+=gain;sessionStars+=gain;$('stars').textContent=stars;saveStars();
+  if(unlockedCount(stars)>before){const b=BADGES[unlockedCount(stars)-1];setTimeout(()=>showUnlock(b),900);}
+}
+
+/* ---------- state ---------- */
+let level=1,prob=null,answered=false;
+let qNum=0,sessionStars=0;
+
+/* ---------- session ---------- */
+function buildDots(){
+  const box=$('dots');box.replaceChildren();
+  for(let i=0;i<QUESTIONS;i++){const d=document.createElement('div');d.className='dot';box.appendChild(d);}
+}
+function startSession(){qNum=0;sessionStars=0;buildDots();$('reward').style.display='none';nextQuestion();}
+function nextQuestion(){
+  qNum++;
+  $('pcount').textContent=`もんだい ${qNum}/${QUESTIONS}`;
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('now',i===qNum-1));
+  showProblem();
+}
+function markDot(gain){
+  const d=document.querySelectorAll('.dot')[qNum-1];if(!d)return;
+  d.classList.remove('now');d.classList.add(gain>=2?'got2':'got1');d.textContent='⭐';
+}
+function showReward(){
+  const max=QUESTIONS*2;
+  let emoji,title,msg;
+  if(sessionStars>=max){emoji='🏆';title='パーフェクト!';msg='もんだいを ぜんぶ よみとけたね!さすが!';}
+  else if(sessionStars>=max*.7){emoji='🌟';title='すごい!クリア!';msg='ぶんしょうもんだいが どんどん とくいに なってるよ!';}
+  else{emoji='💪';title='がんばった!';msg='なんどもやると もっと よめるように なるよ!';}
+  $('rEmoji').textContent=emoji;$('rTitle').textContent=title;
+  $('rStars').textContent=`⭐×${sessionStars} ゲット!`;$('rTotal').textContent=`ぜんぶで ⭐${stars}こ`;
+  $('rMsg').textContent=msg;$('reward').style.display='flex';sFanfare();confetti(60);
+}
+
+/* ---------- render ---------- */
+function showProblem(){
+  prob=makeProblem(level);answered=false;
+  $('qIcon').textContent=prob.icon;
+  $('qText').textContent=prob.text;
+  $('msg').textContent='';$('msg').className='msg think';
+  $('nextBtn').style.display='none';
+  const box=$('choices');box.replaceChildren();
+  prob.opts.forEach(v=>{
+    const b=document.createElement('button');
+    b.className='choice';b.textContent=v;
+    b.onclick=()=>pickAnswer(b,v);
+    box.appendChild(b);
+  });
+}
+function pickAnswer(btn,val){
+  if(answered)return;
+  answered=true;audio();sPick();
+  btn.classList.add('picked');
+  document.querySelectorAll('.choice').forEach(b=>b.disabled=true);
+  const ok=val===prob.ans;
+  document.querySelectorAll('.choice').forEach(b=>{
+    if(b.textContent===String(prob.ans))b.classList.add('right');
+    else if(b===btn)b.classList.add('wrong');
+  });
+  const gain=ok?2:1;
+  if(ok){sRight();$('msg').textContent='せいかい! ⭐+2';$('msg').className='msg good';confetti(22);}
+  else{sOops();$('msg').textContent=`こたえは「${prob.ans}」だったよ! ⭐+1`;$('msg').className='msg oops';}
+  gainStars(gain);markDot(gain);
+  $('nextBtn').textContent=qNum>=QUESTIONS?'🎉 けっかを みる!':'つぎの もんだい ➡';
+  $('nextBtn').style.display='';
+}
+
+/* ---------- confetti ---------- */
+function confetti(n){
+  const colors=['#FFB49B','#8FC5F5','#FFDE8E','#9CE3C9','#CBB9F2'];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');c.className='confetti';
+    c.style.left=Math.random()*100+'vw';c.style.background=rnd(colors);
+    c.style.animationDuration=(1.4+Math.random()*1.2)+'s';c.style.animationDelay=(Math.random()*.4)+'s';
+    document.body.appendChild(c);setTimeout(()=>c.remove(),3400);
+  }
+}
+
+/* ---------- wiring ---------- */
+document.querySelectorAll('.lv').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.lv').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');level=+b.dataset.lv;startSession();
+});
+$('nextBtn').onclick=()=>{if(qNum>=QUESTIONS)showReward();else nextQuestion();};
+$('againBtn').onclick=startSession;
+$('soundBtn').onclick=()=>{
+  muted=!muted;$('soundBtn').textContent=muted?'🔇':'🔊';
+  $('soundBtn').classList.toggle('on',muted);if(!muted){audio();sPick();}
+};
+$('starsPill').onclick=()=>{renderZukan();$('zukan').style.display='flex';};
+$('zClose').onclick=()=>$('zukan').style.display='none';
+$('zukan').onclick=e=>{if(e.target.id==='zukan')$('zukan').style.display='none';};
+$('uClose').onclick=()=>$('unlock').style.display='none';
+
+loadStars().finally(startSession);
+})();
+</script>
+</body>
+</html>
