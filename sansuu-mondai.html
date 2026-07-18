@@ -12,6 +12,7 @@
 .qcard .qicon{font-size:38px; margin-bottom:10px; line-height:1;}
 .qcard .qtext{font-size:16.5px; line-height:1.9; font-weight:900; color:var(--ink);}
 </style>
+<link rel="stylesheet" href="block-theme.css">
 </head>
 <body>
 <div class="sky-layer" aria-hidden="true"><div class="cloud c1"></div><div class="cloud c2"></div><div class="deco-star s1">&#10022;</div><div class="deco-heart h1">&#9825;</div></div>
@@ -225,9 +226,9 @@ const BADGES=[
 ];
 let stars=0;
 const unlockedCount=s=>BADGES.filter(b=>s>=b.n).length;
-async function saveStars(){try{if(window.storage)await window.storage.set('sansuu-mondai-stars',String(stars));}catch(e){}}
+async function saveStars(){try{localStorage.setItem('sansuu-mondai-stars',String(stars));}catch(e){}}
 async function loadStars(){
-  try{if(window.storage){const r=await window.storage.get('sansuu-mondai-stars');if(r&&r.value)stars=parseInt(r.value)||0;}}catch(e){}
+  try{const v=localStorage.getItem('sansuu-mondai-stars');if(v)stars=parseInt(v)||0;}catch(e){}
   $('stars').textContent=stars;
 }
 function renderZukan(){

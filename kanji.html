@@ -25,6 +25,7 @@
 #hwTarget{width:min(70vw,260px); height:min(70vw,260px); background:var(--card-soft); border-radius:20px; overflow:hidden;}
 .trace-controls{display:flex; gap:8px; margin-top:14px; width:100%;}
 </style>
+<link rel="stylesheet" href="block-theme.css">
 </head>
 <body>
 <div class="sky-layer" aria-hidden="true"><div class="cloud c1"></div><div class="cloud c2"></div><div class="deco-star s1">&#10022;</div><div class="deco-heart h1">&#9825;</div></div>
@@ -210,9 +211,9 @@ const BADGES=[
   {n:600,e:'🏆',name:'かんじ マスター'},
 ];
 const unlockedCount=s=>BADGES.filter(b=>s>=b.n).length;
-async function saveStars(){try{if(window.storage)await window.storage.set('kanji-stars',String(stars));}catch(e){}}
+async function saveStars(){try{localStorage.setItem('kanji-stars',String(stars));}catch(e){}}
 async function loadStars(){
-  try{if(window.storage){const r=await window.storage.get('kanji-stars');if(r&&r.value)stars=parseInt(r.value)||0;}}catch(e){}
+  try{const v=localStorage.getItem('kanji-stars');if(v)stars=parseInt(v)||0;}catch(e){}
   $('stars').textContent=stars;
 }
 function renderZukan(){

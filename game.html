@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ごほうびゲーム</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<style>
+.view{display:none}
+.view.on{display:block}
+.game-grid{display:flex;flex-direction:column;gap:14px;margin-top:4px}
+.game-card{position:relative;display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:none;font-family:inherit;background:var(--card);border-radius:var(--radius-card);padding:16px 18px;box-shadow:var(--shadow-md);cursor:pointer}
+.game-card .ge{font-size:34px;line-height:1}
+.game-card .gt{font-size:16px;font-weight:900;color:var(--ink)}
+.game-card .gd{font-size:11.5px;color:var(--ink-soft);margin-top:2px}
+.game-card.locked{opacity:.6;pointer-events:none;filter:grayscale(.35)}
+
+/* ---------- もぐらたたき ---------- */
+.mole-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mole-hole{aspect-ratio:1;border-radius:16px;background:var(--card-soft);display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer;user-select:none;transition:transform .08s}
+.mole-hole:active{transform:scale(.92)}
+.mole-hole .mole{opacity:0;transform:scale(.4);transition:opacity .12s,transform .12s}
+.mole-hole.up .mole{opacity:1;transform:scale(1)}
+
+/* ---------- しんけいすいじゃく ---------- */
+.memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mcard{aspect-ratio:1;border-radius:12px;background:var(--blue-d);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;color:#fff}
+.mcard.flipped,.mcard.matched{background:var(--card-soft);color:var(--ink)}
+.mcard.matched{opacity:.5;cursor:default}
+
+/* ---------- すごろく ---------- */
+.sugoroku-track{display:flex;flex-wrap:wrap;gap:6px}
+.tile{width:15%;aspect-ratio:1;border-radius:10px;background:var(--card-soft);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:var(--ink-soft);position:relative}
+.tile.current::after{content:"🚗";position:absolute;font-size:24px;top:-16px}
+.tile.goal{background:var(--sun);color:var(--on-sun)}
+</style>
+<link rel="stylesheet" href="block-theme.css">
+</head>
+<body>
+<div class="sky-layer" aria-hidden="true"><div class="cloud c1"></div><div class="cloud c2"></div><div class="deco-star s1">&#10022;</div><div class="deco-heart h1">&#9825;</div></div>
+<div class="app">
+  <div class="top">
+    <a href="index.html" class="home" title="もくじへ">🏠</a>
+    <h1>🎮 ごほうびゲーム</h1>
+    <div class="stars">⭐<b id="starsTotal">0</b></div>
+  </div>
+
+  <div class="mascot-guide" aria-label="おうえんキャラクター"><span class="mascot-face">🐻</span><span>星を あつめて、あそべるゲームを ふやそう！</span></div>
+
+  <div class="view on" id="viewHub">
+    <div class="game-grid" id="gameGrid"></div>
+  </div>
+
+  <div class="view" id="viewMole">
+    <button class="act" data-back>← もどる</button>
+    <div class="progressrow"><div class="pcount" id="moleTime">⏱ 30びょう</div><div class="pcount" id="moleScore">🎯 0こ</div></div>
+    <div class="card"><div class="mole-grid" id="moleGrid"></div></div>
+  </div>
+
+  <div class="view" id="viewMemory">
+    <button class="act" data-back>← もどる</button>
+    <div class="progressrow"><div class="pcount" id="memMoves">てすう 0かい</div></div>
+    <div class="card"><div class="memory-grid" id="memGrid"></div></div>
+  </div>
+
+  <div class="view" id="viewSugoroku">
+    <button class="act" data-back>← もどる</button>
+    <div class="card"><div class="sugoroku-track" id="sugorokuTrack"></div></div>
+    <div class="actions"><button class="act primary" id="rollBtn">🎲 サイコロを ふる</button></div>
+    <div class="msg think" id="sugorokuMsg"></div>
+  </div>
+</div>
+
+<div class="reward" id="reward" style="display:none">
+  <div class="rewardcard">
+    <div class="big" id="rEmoji">🏆</div>
+    <h2 id="rTitle">クリア!</h2>
+    <div class="rstars" id="rStat"></div>
+    <div class="rmsg" id="rMsg"></div>
+    <button id="againBtn">もういちど あそぶ ▶</button>
+    <button id="hubBtn" style="margin-top:10px;background:var(--card-soft);color:var(--ink-soft);box-shadow:none">🏠 ゲームをえらぶ</button>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ---------- 星の合計（index.htmlと同じ集計ロジックをそのまま複製） ---------- */
+let totalStars=0;
+Object.keys(localStorage).forEach(k=>{if(/star|score|total/i.test(k)){const v=parseInt(localStorage.getItem(k),10);if(Number.isFinite(v))totalStars+=v}});
+$('starsTotal').textContent=Math.min(totalStars,999);
+
+/* ---------- ゲーム一覧としきい値（index.htmlのREWARD_THRESHOLDと同じ値で同期） ---------- */
+const GAMES=[
+  {id:'mole',view:'viewMole',emoji:'🐹',title:'もぐらたたき',desc:'すばやくタップして もぐらを つかまえよう！',threshold:20,start:startMole},
+  {id:'memory',view:'viewMemory',emoji:'🐨',title:'しんけいすいじゃく',desc:'おなじ絵カードを見つけて ペアにしよう！',threshold:50,start:startMemory},
+  {id:'sugoroku',view:'viewSugoroku',emoji:'🎲',title:'すごろくの たび',desc:'サイコロをふって ゴールを めざそう！',threshold:90,start:startSugoroku},
+];
+
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));$(id).classList.add('on');}
+
+function renderHub(){
+  const grid=$('gameGrid');grid.innerHTML='';
+  GAMES.forEach(g=>{
+    const unlocked=totalStars>=g.threshold;
+    const b=document.createElement('button');
+    b.className='game-card'+(unlocked?'':' locked');
+    b.innerHTML=`<span class="ge">${g.emoji}</span><div><div class="gt">${g.title}</div><div class="gd">${unlocked?g.desc:`🔒 あと⭐${g.threshold-totalStars}こでかいほう`}</div></div>`;
+    if(unlocked)b.onclick=()=>{showView(g.view);g.start();};
+    grid.appendChild(b);
+  });
+}
+
+function stopAllGames(){
+  clearTimeout(moleTimer);clearInterval(moleTickTimer);moleActive=false;
+  clearTimeout(memLockTimer);
+  clearTimeout(sugorokuEventTimer);
+}
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>{stopAllGames();showView('viewHub');renderHub();});
+
+let rewardAgain=null;
+function showReward(emoji,title,stat,msg,againFn){
+  $('rEmoji').textContent=emoji;$('rTitle').textContent=title;$('rStat').textContent=stat;$('rMsg').textContent=msg;
+  rewardAgain=againFn;
+  $('reward').style.display='flex';
+}
+$('againBtn').onclick=()=>{$('reward').style.display='none';if(rewardAgain)rewardAgain();};
+$('hubBtn').onclick=()=>{$('reward').style.display='none';showView('viewHub');renderHub();};
+
+/* ============================================================
+   ゲーム1: もぐらたたき
+   ============================================================ */
+let moleTimer=null,moleTickTimer=null,moleTimeLeft=30,moleScore=0,moleActive=false,moleHoles=[];
+function initMoleGrid(){
+  const grid=$('moleGrid');grid.innerHTML='';moleHoles=[];
+  for(let i=0;i<9;i++){
+    const h=document.createElement('div');
+    h.className='mole-hole';
+    h.innerHTML='<span class="mole">🐹</span>';
+    h.onclick=()=>{
+      if(!moleActive||!h.classList.contains('up'))return;
+      h.classList.remove('up');
+      moleScore++;
+      $('moleScore').textContent=`🎯 ${moleScore}こ`;
+    };
+    grid.appendChild(h);moleHoles.push(h);
+  }
+}
+function molePopLoop(){
+  if(!moleActive)return;
+  moleHoles.forEach(h=>h.classList.remove('up'));
+  const h=moleHoles[Math.floor(Math.random()*moleHoles.length)];
+  h.classList.add('up');
+  const upFor=Math.max(500,900-moleScore*15);
+  moleTimer=setTimeout(()=>{
+    h.classList.remove('up');
+    if(moleActive)moleTimer=setTimeout(molePopLoop,150+Math.random()*250);
+  },upFor);
+}
+function startMole(){
+  moleScore=0;moleTimeLeft=30;moleActive=true;
+  $('moleScore').textContent='🎯 0こ';$('moleTime').textContent='⏱ 30びょう';
+  initMoleGrid();
+  molePopLoop();
+  clearInterval(moleTickTimer);
+  moleTickTimer=setInterval(()=>{
+    moleTimeLeft--;$('moleTime').textContent=`⏱ ${moleTimeLeft}びょう`;
+    if(moleTimeLeft<=0)endMole();
+  },1000);
+}
+function endMole(){
+  moleActive=false;
+  clearTimeout(moleTimer);clearInterval(moleTickTimer);
+  moleHoles.forEach(h=>h.classList.remove('up'));
+  const best=Math.max(moleScore,parseInt(localStorage.getItem('mole-best')||'0',10));
+  localStorage.setItem('mole-best',String(best));
+  showReward('🐹','タイムアップ！',`🎯 ${moleScore}こ たいほ！`,moleScore>=15?'すごい スピード！':'たくさん タップできたね！',startMole);
+}
+
+/* ============================================================
+   ゲーム2: しんけいすいじゃく
+   ============================================================ */
+const MEMORY_EMOJI=['🍎','🐶','🚗','⭐','🌈','🐸','🎈','🍩'];
+let memCards=[],memFirst=null,memSecond=null,memMoves=0,memLock=false,memLockTimer=null,memMatchedCount=0;
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+function startMemory(){
+  memMoves=0;memFirst=null;memSecond=null;memLock=false;memMatchedCount=0;
+  clearTimeout(memLockTimer);
+  $('memMoves').textContent='てすう 0かい';
+  memCards=shuffle([...MEMORY_EMOJI,...MEMORY_EMOJI]);
+  const grid=$('memGrid');grid.innerHTML='';
+  memCards.forEach((emoji,idx)=>{
+    const c=document.createElement('div');
+    c.className='mcard';c.textContent='❔';
+    c.onclick=()=>flipMemCard(c,emoji);
+    grid.appendChild(c);
+  });
+}
+function flipMemCard(el,emoji){
+  if(memLock||el.classList.contains('flipped')||el.classList.contains('matched'))return;
+  el.classList.add('flipped');el.textContent=emoji;
+  if(memFirst===null){memFirst={el,emoji};return;}
+  memSecond={el,emoji};
+  memMoves++;$('memMoves').textContent=`てすう ${memMoves}かい`;
+  memLock=true;
+  if(memFirst.emoji===memSecond.emoji){
+    memFirst.el.classList.add('matched');memSecond.el.classList.add('matched');
+    memMatchedCount+=2;
+    memFirst=null;memSecond=null;memLock=false;
+    if(memMatchedCount===memCards.length)endMemory();
+  }else{
+    memLockTimer=setTimeout(()=>{
+      memFirst.el.classList.remove('flipped');memFirst.el.textContent='❔';
+      memSecond.el.classList.remove('flipped');memSecond.el.textContent='❔';
+      memFirst=null;memSecond=null;memLock=false;
+    },700);
+  }
+}
+function endMemory(){
+  const prevBest=parseInt(localStorage.getItem('memory-best-moves')||'999',10);
+  localStorage.setItem('memory-best-moves',String(Math.min(memMoves,prevBest)));
+  showReward('🐨','ぜんぶ そろった！',`✅ ${memMoves}かいで クリア！`,memMoves<=12?'かんぺきな きおくりょく！':'よく できたね！',startMemory);
+}
+
+/* ============================================================
+   ゲーム3: すごろくの たび
+   ============================================================ */
+const SUGOROKU_LEN=20;
+const SUGOROKU_EVENTS={4:{d:2,label:'🎁 +2 すすむ！'},9:{d:-1,label:'🐌 -1 もどる'},13:{d:2,label:'🎁 +2 すすむ！'},17:{d:-2,label:'🐌 -2 もどる'}};
+let sugorokuPos=0,sugorokuRolls=0,sugorokuBusy=false,sugorokuEventTimer=null;
+function renderSugoroku(){
+  const track=$('sugorokuTrack');track.innerHTML='';
+  for(let i=0;i<SUGOROKU_LEN;i++){
+    const t=document.createElement('div');
+    const isGoal=i===SUGOROKU_LEN-1;
+    t.className='tile'+(i===sugorokuPos?' current':'')+(isGoal?' goal':'');
+    t.textContent=isGoal?'🏁':(SUGOROKU_EVENTS[i]?(SUGOROKU_EVENTS[i].d>0?'🎁':'🐌'):(i+1));
+    track.appendChild(t);
+  }
+}
+function startSugoroku(){
+  sugorokuPos=0;sugorokuRolls=0;sugorokuBusy=false;
+  clearTimeout(sugorokuEventTimer);
+  $('sugorokuMsg').textContent='サイコロを ふって すすもう！';
+  $('rollBtn').disabled=false;
+  renderSugoroku();
+}
+function rollSugoroku(){
+  if(sugorokuBusy||sugorokuPos>=SUGOROKU_LEN-1)return;
+  sugorokuBusy=true;$('rollBtn').disabled=true;
+  const roll=Math.floor(Math.random()*6)+1;
+  sugorokuRolls++;
+  sugorokuPos=Math.min(SUGOROKU_LEN-1,sugorokuPos+roll);
+  $('sugorokuMsg').textContent=`🎲 ${roll} が でた！`;
+  renderSugoroku();
+  sugorokuEventTimer=setTimeout(()=>{
+    const ev=SUGOROKU_EVENTS[sugorokuPos];
+    if(ev&&sugorokuPos<SUGOROKU_LEN-1){
+      sugorokuPos=Math.max(0,Math.min(SUGOROKU_LEN-1,sugorokuPos+ev.d));
+      $('sugorokuMsg').textContent=ev.label;
+      renderSugoroku();
+    }
+    sugorokuBusy=false;
+    if(sugorokuPos>=SUGOROKU_LEN-1){endSugoroku();}else{$('rollBtn').disabled=false;}
+  },500);
+}
+function endSugoroku(){
+  $('rollBtn').disabled=true;
+  const prevBest=parseInt(localStorage.getItem('sugoroku-best-rolls')||'999',10);
+  localStorage.setItem('sugoroku-best-rolls',String(Math.min(sugorokuRolls,prevBest)));
+  showReward('🎲','ゴール！',`🏁 ${sugorokuRolls}かいで ゴール！`,sugorokuRolls<=8?'さいこう きろく かも！':'ゴール できたね！',startSugoroku);
+}
+$('rollBtn').onclick=rollSugoroku;
+
+renderHub();
+</script>
+</body>
+</html>
